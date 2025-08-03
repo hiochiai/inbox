@@ -1,0 +1,268 @@
+#!/bin/bash
+set -euo pipefail
+
+# --- Configuration ---
+INBOX_VERSION="1.0.0"
+INBOX_CONFIG_DIR="${HOME}/.inbox"
+INBOX_IMAGE="${INBOX_IMAGE:-ghcr.io/hiochiai/inbox}"
+DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
+
+# --- Helper Functions ---
+
+function get_agent_details() {
+    case "$1" in
+        gemini) echo "gemini:--yolo" ;;
+        claude) echo "claude:--dangerously-skip-permissions" ;;
+        *) return 1 ;;
+    esac
+}
+
+function validate_agent() {
+    get_agent_details "$1" >/dev/null || {
+        echo "Error: Invalid agent '$1'. Use 'gemini' or 'claude'." >&2
+        exit 1
+    }
+}
+
+function require_arg() {
+    if [[ -z "${2:-}" ]]; then
+        echo "Error: Missing required argument: $1" >&2
+        echo "Usage: $3" >&2
+        exit 1
+    fi
+}
+
+function print_usage() {
+    cat <<EOF
+InBox is a wrapper for running AI agents in a secure, containerized environment.
+
+Usage:
+  inbox [command]
+
+Available Commands:
+  gemini                Run the Gemini agent.
+  claude                Run the Claude agent.
+  profile               Manage agent configurations (profiles).
+  version               Show inbox version.
+
+Management Commands:
+  profile list          List all available profiles.
+  profile path <agent> [<profile>]
+                        Display the configuration path for a profile.
+  profile default       Show current default agent and profile.
+  profile set-default <agent> [<profile>]
+                        Set the default agent and profile for the 'inbox' command.
+
+Run 'inbox <command> --help' for more information on a specific command.
+
+Examples:
+  # Start a chat with Gemini using the default profile
+  inbox gemini
+
+  # Start a chat with Claude using a specific 'work' profile
+  inbox claude -p work
+
+  # Pass flags directly to the Gemini agent to get its version
+  inbox gemini -- --version
+
+  # List all your created profiles
+  inbox profile list
+
+  # Set the default command to run 'claude' with the 'personal' profile
+  inbox profile set-default claude personal
+
+  # After setting a default, just run 'inbox' to launch it
+  inbox
+EOF
+}
+
+function get_default_agent_and_profile() {
+    if [[ -f "${DEFAULT_CONFIG_FILE}" ]]; then
+        # shellcheck source=/dev/null
+        source "${DEFAULT_CONFIG_FILE}"
+        echo "${DEFAULT_AGENT:-} ${DEFAULT_PROFILE:-}"
+    else
+        echo ""
+    fi
+}
+
+function run_agent() {
+    local agent_details="$1"
+    local profile_name="$2"
+    local use_default_args="$3"
+    shift 3
+    local agent_args=("$@")
+
+    IFS=':' read -r agent_name default_args <<< "${agent_details}"
+
+    local config_dir_name="${agent_name}"
+    if [[ -n "${profile_name}" ]]; then
+        config_dir_name="${agent_name}-${profile_name}"
+    fi
+    local host_config_dir="${INBOX_CONFIG_DIR}/${config_dir_name}"
+    mkdir -p "${host_config_dir}"
+
+    local final_agent_args=()
+    # Add default arguments if requested and they exist
+    if [[ "${use_default_args}" == "true" && -n "${default_args}" ]]; then
+        read -r -a final_agent_args <<< "${default_args}"
+    fi
+
+    # Append user-provided arguments
+    if [[ ${#agent_args[@]} -gt 0 ]]; then
+        final_agent_args+=("${agent_args[@]}")
+    fi
+
+    # Determine the final Docker image name
+    local final_image_name
+    if [[ "${INBOX_IMAGE}" == *":"* ]]; then
+        # If INBOX_IMAGE already has a tag, use it as is
+        final_image_name="${INBOX_IMAGE}"
+    else
+        # Otherwise, append the agent-specific tag
+        final_image_name="${INBOX_IMAGE}:${agent_name}"
+    fi
+
+    echo "Running ${agent_name} (profile: ${profile_name:-default})..."
+    docker run -it --rm \
+        -v "${host_config_dir}:/home/node" \
+        -v "$(pwd):/workspace" \
+        -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
+        "${final_image_name}" \
+        "${final_agent_args[@]+${final_agent_args[@]}}"
+}
+
+# --- Command Parsers ---
+
+function handle_profile_command() {
+    local sub_command="${1:-}"
+    shift || true
+    case "${sub_command}" in
+        list)
+            echo "Available profiles:"
+            if [ -d "${INBOX_CONFIG_DIR}" ]; then
+                # Find directories named like 'agent-profile' and format the output
+                (cd "${INBOX_CONFIG_DIR}" && find . -type d -name '*-*' | sed -e 's|./||' -e 's/-/ /' | awk '{print "- "$1" ("$2")"}')
+            else
+                echo "No profiles created yet."
+            fi
+            ;;
+        default)
+            read -r default_agent default_profile < <(get_default_agent_and_profile)
+            if [[ -n "${default_agent}" ]]; then
+                echo "Default Agent: ${default_agent}"
+                echo "Default Profile: ${default_profile:-<none>}"
+            else
+                echo "No default agent is set."
+            fi
+            ;;
+        set-default)
+            local agent="${1:-}"
+            local profile="${2:-}"
+
+            require_arg "agent" "${agent}" "inbox profile set-default <agent> [<profile>]"
+            validate_agent "${agent}"
+
+            mkdir -p "${INBOX_CONFIG_DIR}"
+            echo "DEFAULT_AGENT=${agent}" > "${DEFAULT_CONFIG_FILE}"
+            echo "DEFAULT_PROFILE=${profile}" >> "${DEFAULT_CONFIG_FILE}"
+            echo "Default set to agent='${agent}' and profile='${profile:-default}'."
+            ;;
+        path)
+            local agent="${1:-}"
+            local profile="${2:-}"
+
+            require_arg "agent" "${agent}" "inbox profile path <agent> [<profile>]"
+            validate_agent "${agent}"
+
+            local agent_details
+            agent_details=$(get_agent_details "${agent}")
+            local agent_canonical_name="${agent_details%%:*}"
+            local config_dir_name="${agent_canonical_name}"
+            if [[ -n "${profile}" ]]; then
+                config_dir_name="${agent_canonical_name}-${profile}"
+            fi
+            echo "${INBOX_CONFIG_DIR}/${config_dir_name}"
+            ;;
+        *)
+            echo "Error: Unknown profile command '${sub_command}'." >&2
+            print_usage
+            exit 1
+            ;;
+    esac
+}
+
+# --- Main Logic ---
+
+# Main entry point for the script
+function main() {
+    # If no arguments are provided, run the default agent or show usage
+    if [[ $# -eq 0 ]]; then
+        read -r default_agent default_profile < <(get_default_agent_and_profile)
+        if [[ -n "${default_agent}" ]]; then
+            local agent_details
+            agent_details=$(get_agent_details "${default_agent}")
+            run_agent "${agent_details}" "${default_profile}" "true"
+        else
+            print_usage
+            exit 1
+        fi
+        return
+    fi
+
+    local command="$1"
+    shift
+
+    # Check if the command is an agent name
+    local agent_details
+    agent_details=$(get_agent_details "${command}" || true)
+    if [[ -n "${agent_details}" ]]; then
+        local profile=""
+        local use_default_args="true"
+        local pass_through_args=()
+        while [[ $# -gt 0 ]]; do
+            case "$1" in
+                -p|--profile)
+                    profile="$2"
+                    shift 2
+                    ;;
+                -n|--no-defaults)
+                    use_default_args="false"
+                    shift
+                    ;;
+                --)
+                    shift
+                    pass_through_args=("$@")
+                    break
+                    ;;
+                *)
+                    pass_through_args+=("$1")
+                    shift
+                    ;;
+            esac
+        done
+        run_agent "${agent_details}" "${profile}" "${use_default_args}" ${pass_through_args[@]+${pass_through_args[@]}}
+        return
+    fi
+
+    # Handle management commands
+    case "${command}" in
+        profile)
+            handle_profile_command "$@"
+            ;;
+        version)
+            echo "inbox version ${INBOX_VERSION}"
+            ;;
+        -h|--help)
+            print_usage
+            ;;
+        *)
+            echo "Error: Unknown command '${command}'." >&2
+            print_usage
+            exit 1
+            ;;
+    esac
+}
+
+# Execute the main function with all script arguments
+main "$@"

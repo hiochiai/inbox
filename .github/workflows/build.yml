@@ -1,0 +1,146 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY_GHCR: ghcr.io
+  IMAGE_NAME_BASE: inbox
+  INBOX_VERSION: "1.0.0"
+
+jobs:
+  build-gemini:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY_GHCR }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get latest Gemini CLI version
+      id: gemini-version
+      run: |
+        LATEST_VERSION=$(npm view @google/gemini-cli version)
+        echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build and push Gemini image with version tag
+      uses: docker/build-push-action@v5
+      with:
+        context: ./boxes/gemini
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ env.INBOX_VERSION }}-gemini${{ steps.gemini-version.outputs.version }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push Gemini image without version tag
+      uses: docker/build-push-action@v5
+      with:
+        context: ./boxes/gemini
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ env.INBOX_VERSION }}-gemini
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Test Gemini container
+      run: |
+        # Pull the built image and test it
+        IMAGE_TAG="${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ env.INBOX_VERSION }}-gemini${{ steps.gemini-version.outputs.version }}"
+        docker pull $IMAGE_TAG
+        docker run --rm $IMAGE_TAG --help
+
+  build-claude:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY_GHCR }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Get latest Claude CLI version
+      id: claude-version
+      run: |
+        LATEST_VERSION=$(npm view @anthropic-ai/claude-code version)
+        echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
+
+    - name: Build and push Claude image with version tag
+      uses: docker/build-push-action@v5
+      with:
+        context: ./boxes/claude
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ env.INBOX_VERSION }}-claude${{ steps.claude-version.outputs.version }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Build and push Claude image without version tag
+      uses: docker/build-push-action@v5
+      with:
+        context: ./boxes/claude
+        platforms: linux/amd64,linux/arm64
+        push: true
+        tags: |
+          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ env.INBOX_VERSION }}-claude
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: Test Claude container
+      run: |
+        # Pull the built image and test it
+        IMAGE_TAG="${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ env.INBOX_VERSION }}-claude${{ steps.claude-version.outputs.version }}"
+        docker pull $IMAGE_TAG
+        docker run --rm $IMAGE_TAG --help
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-gemini, build-claude]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          inbox
+        generate_release_notes: true
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
