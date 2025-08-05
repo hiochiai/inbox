@@ -230,11 +230,6 @@ function main() {
                     use_default_args="false"
                     shift
                     ;;
-                --)
-                    shift
-                    pass_through_args=("$@")
-                    break
-                    ;;
                 *)
                     pass_through_args+=("$1")
                     shift

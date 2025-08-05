@@ -120,8 +120,8 @@ inbox gemini -p work-profile
 inbox claude -p personal
 
 # Pass arguments to agent
-inbox gemini -- --help
-inbox claude -- --version
+inbox gemini --help
+inbox claude --version
 
 # Skip default flags
 inbox gemini -n
