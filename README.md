@@ -26,129 +26,27 @@ sudo mv inbox /usr/local/bin/
 inbox version
 ```
 
-## Quick Start
-
-### Getting Started with Gemini
-
-#### 1. Initial Setup
-
-```bash
-inbox gemini
-```
-
-Follow the prompts: select a theme and choose "Login with Google".
-
-#### 2. Get Authentication URL
-
-```bash
-inbox gemini
-```
-
-Copy the URL displayed in the terminal and open it in your browser.
-
-#### 3. Complete Authentication
-
-* Log in with your Google account and grant the necessary permissions.
-* Copy the verification code shown in the browser and paste it into your terminal.
-
-#### 4. Start Using Gemini
-
-```bash
-inbox gemini
-```
-
-#### Configure Google Cloud Project (Optional)
-
-You can set your project ID for the default profile with this command:
-
-```bash
-cat << EOF >$(inbox profile path gemini)/.gemini/.env
-GOOGLE_CLOUD_PROJECT=your-project-id
-EOF
-```
-
-### Getting Started with Claude
-
-#### 1. Start Authentication
-
-```bash
-inbox claude
-```
-
-#### 2. Authenticate in Browser
-
-* Copy the displayed URL, open it in your browser, and log in.
-* Copy the verification code and paste it into your terminal.
-
-#### 3. Container Setup
-
-* When prompted about "Bypass Permissions mode," select "Yes" (this is required for the container environment).
-
-#### 4. Start Using Claude
-
-```bash
-inbox claude
-```
-
-#### Configure Claude Settings (Optional)
-
-To disable non-essential traffic, add the following configuration:
-```bash
-cat << EOF > ~/.inbox/claude/.claude/settings.json
-{
-  "env": {
-    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
-  }
-}
-EOF
-```
-
 ## Usage
 
-### Basic Commands
-
-```bash
-# Run specific agent
-inbox gemini
-inbox claude
-
-# Run default agent (after setting one)
-inbox
-
-# Use specific profile
-inbox gemini -p work-profile
-inbox claude -p personal
-
-# Pass arguments to agent
-inbox gemini --help
-inbox claude --version
-
-# Skip default flags
-inbox gemini -n
-```
+### Getting Started
+* Getting Started ([Gemini](./docs/gemini/getting_started.md)) ([Claude](./docs/claude/getting_started.md))
+* Getting Started with GOOGLE_CLOUD_PROJECT ([Gemini](./docs/gemini/google_cloud_project.md))
 
 ### Profile Management
+* [Default Startup](./docs/claude/default_startup.md)
+* Creating Profiles ([Gemini](./docs/gemini/creating_profiles.md)) ([Claude](./docs/claude/creating_profiles.md))
+* Switching Profiles ([Gemini](./docs/gemini/switching_profiles.md)) ([Claude](./docs/claude/switching_profiles.md))
+* Setting a Default Profile ([Gemini](./docs/gemini/setting_default_profile.md)) ([Claude](./docs/claude/setting_default_profile.md))
 
-```bash
-# List all profiles
-inbox profile list
-
-# Show profile configuration path
-inbox profile path gemini              # Default profile
-inbox profile path claude work-profile # Named profile
-
-# Set default agent and profile
-inbox profile set-default gemini work-profile
-
-# Show current default
-inbox profile default
-
-# Use default agent (after setting)
-inbox
-```
+### Interacting with AI
+* Passing Arguments ([Gemini](./docs/gemini/passing_arguments.md)) ([Claude](./docs/claude/passing_arguments.md))
+* Using Memory Files ([Gemini](./docs/gemini/using_memory_files.md)) ([Claude](./docs/claude/using_memory_files.md))
+* Disable non-essential trafice ([Claude](./docs/claude/optional_settings.md))
 
 
 ## Configuration
+
+InBox uses a profile concept to manage settings for each AI. This allows you to switch between different configurations for various tasks or projects.
 
 ### Directory Structure
 
@@ -172,32 +70,6 @@ InBox stores configurations in `~/.inbox/` with the following structure:
 
 Each profile directory is mounted to `/home/node` inside the container, allowing agents to access their configurations seamlessly.
 
-
-### Memory Files
-
-Place `GEMINI.md` or `CLAUDE.md` files in the respective profile directories to provide persistent context to your AI agents.
-
-## Advanced Usage
-
-### Custom Profiles for Different Projects
-
-```bash
-# Create work profile
-inbox gemini -p work
-# (Complete authentication for work account)
-
-# Create personal profile  
-inbox claude -p personal
-# (Complete authentication for personal account)
-
-# Set default for quick access
-inbox profile set-default claude personal
-
-# Switch between profiles
-inbox gemini -p work      # Use work Gemini
-inbox claude -p personal  # Use personal Claude
-inbox                     # Use default (personal Claude)
-```
 
 ## Troubleshooting
 
