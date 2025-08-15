@@ -43,6 +43,7 @@ Available Commands:
   gemini                Run the Gemini agent.
   claude                Run the Claude agent.
   profile               Manage agent configurations (profiles).
+  update                Update inbox to the latest version.
   version               Show inbox version.
 
 Management Commands:
@@ -133,6 +134,42 @@ function run_agent() {
 }
 
 # --- Command Parsers ---
+
+function handle_update_command() {
+    echo "Updating inbox..."
+    local temp_file
+    temp_file=$(mktemp)
+    # Assuming the script is hosted at this URL.
+    # You might want to make this URL configurable.
+    local script_url="https://raw.githubusercontent.com/hiochiai/inbox/main/inbox"
+
+    # Download the new script to a temporary file
+    if curl -fsSL "${script_url}" -o "${temp_file}"; then
+        # Basic check to see if the downloaded file is a bash script
+        if bash -n "${temp_file}"; then
+            local current_script
+            current_script=$(realpath "$0")
+            # Replace the current script with the new one
+            if mv "${temp_file}" "${current_script}"; then
+                chmod +x "${current_script}"
+                echo "Update successful! New version:"
+                "${current_script}" version
+            else
+                echo "Error: Failed to replace the script." >&2
+                rm -f "${temp_file}"
+                exit 1
+            fi
+        else
+            echo "Error: Downloaded file is not a valid script." >&2
+            rm -f "${temp_file}"
+            exit 1
+        fi
+    else
+        echo "Error: Failed to download the new version." >&2
+        rm -f "${temp_file}"
+        exit 1
+    fi
+}
 
 function handle_profile_command() {
     local sub_command="${1:-}"
@@ -244,6 +281,9 @@ function main() {
     case "${command}" in
         profile)
             handle_profile_command "$@"
+            ;;
+        update)
+            handle_update_command
             ;;
         version)
             echo "inbox version ${INBOX_VERSION}"
