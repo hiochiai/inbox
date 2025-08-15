@@ -1,6 +1,8 @@
 name: Build and Deploy
 
 on:
+  schedule:
+    - cron: '0 0 * * *'
   push:
     branches: [ main, develop ]
     tags: [ 'v*' ]
@@ -44,7 +46,13 @@ jobs:
         LATEST_VERSION=$(npm view @google/gemini-cli version)
         echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
+    - name: Check if image already exists
+      id: check-image
+      run: |
+        docker manifest inspect ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini${{ steps.gemini-version.outputs.version }} > /dev/null 2>&1 && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=false" >> $GITHUB_OUTPUT
+
     - name: Build and push Gemini image with version tag
+      if: steps.check-image.outputs.exists == 'false'
       uses: docker/build-push-action@v5
       with:
         context: ./boxes/gemini
@@ -56,6 +64,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push Gemini image without version tag
+      if: steps.check-image.outputs.exists == 'false'
       uses: docker/build-push-action@v5
       with:
         context: ./boxes/gemini
@@ -67,6 +76,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Test Gemini container
+      if: steps.check-image.outputs.exists == 'false'
       run: |
         # Pull the built image and test it
         IMAGE_TAG="${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini${{ steps.gemini-version.outputs.version }}"
@@ -105,7 +115,13 @@ jobs:
         LATEST_VERSION=$(npm view @anthropic-ai/claude-code version)
         echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
+    - name: Check if image already exists
+      id: check-image
+      run: |
+        docker manifest inspect ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude${{ steps.claude-version.outputs.version }} > /dev/null 2>&1 && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=false" >> $GITHUB_OUTPUT
+
     - name: Build and push Claude image with version tag
+      if: steps.check-image.outputs.exists == 'false'
       uses: docker/build-push-action@v5
       with:
         context: ./boxes/claude
@@ -117,6 +133,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Build and push Claude image without version tag
+      if: steps.check-image.outputs.exists == 'false'
       uses: docker/build-push-action@v5
       with:
         context: ./boxes/claude
@@ -128,6 +145,7 @@ jobs:
         cache-to: type=gha,mode=max
 
     - name: Test Claude container
+      if: steps.check-image.outputs.exists == 'false'
       run: |
         # Pull the built image and test it
         IMAGE_TAG="${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude${{ steps.claude-version.outputs.version }}"
