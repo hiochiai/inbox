@@ -33,7 +33,7 @@ inbox version
 * Getting Started with GOOGLE_CLOUD_PROJECT ([Gemini](./docs/gemini/google_cloud_project.md))
 
 ### Profile Management
-* [Default Startup](./docs/claude/default_startup.md)
+* [Default Startup](./docs/default_startup.md)
 * Creating Profiles ([Gemini](./docs/gemini/creating_profiles.md)) ([Claude](./docs/claude/creating_profiles.md))
 * Switching Profiles ([Gemini](./docs/gemini/switching_profiles.md)) ([Claude](./docs/claude/switching_profiles.md))
 * Setting a Default Profile ([Gemini](./docs/gemini/setting_default_profile.md)) ([Claude](./docs/claude/setting_default_profile.md))
@@ -41,7 +41,7 @@ inbox version
 ### Interacting with AI
 * Passing Arguments ([Gemini](./docs/gemini/passing_arguments.md)) ([Claude](./docs/claude/passing_arguments.md))
 * Using Memory Files ([Gemini](./docs/gemini/using_memory_files.md)) ([Claude](./docs/claude/using_memory_files.md))
-* Disable non-essential trafice ([Claude](./docs/claude/optional_settings.md))
+* Disabling Non-Essential Traffic ([Claude](./docs/claude/optional_settings.md))
 
 
 ## Configuration
@@ -111,7 +111,9 @@ sudo rm /usr/local/bin/inbox
 rm -rf ~/.inbox
 
 # Remove Docker image
-docker rmi ghcr.io/hiochiai/inbox:latest
+docker images --format "{{.Repository}}:{{.Tag}}" \
+  | grep '^ghcr.io/hiochiai/inbox:' \
+  | xargs docker rmi
 ```
 
 > [!WARNING]

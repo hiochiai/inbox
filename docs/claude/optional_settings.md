@@ -1,4 +1,4 @@
-## Disable non-essential trafice
+## Disabling Non-Essential Traffic
 
 To disable non-essential traffic, add the following configuration:
 ```bash
