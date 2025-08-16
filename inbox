@@ -11,9 +11,9 @@ DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
 
 function get_agent_details() {
     case "$1" in
-        gemini) echo "gemini:--yolo" ;;
-        claude) echo "claude:--dangerously-skip-permissions" ;;
-        *) return 1 ;;
+        gemini) echo "gemini:--yolo" ;; 
+        claude) echo "claude:--dangerously-skip-permissions" ;; 
+        *) return 1 ;; 
     esac
 }
 
@@ -92,7 +92,7 @@ function run_agent() {
     local profile_name="$2"
     local use_default_args="$3"
     shift 3
-    local agent_args=("$@")
+    local agent_args=($@)
 
     IFS=':' read -r agent_name default_args <<< "${agent_details}"
 
@@ -124,13 +124,38 @@ function run_agent() {
         final_image_name="${INBOX_IMAGE}:${INBOX_VERSION}-${agent_name}"
     fi
 
+    local docker_run_cmd=("docker" "run" "-it" "--rm")
+    docker_run_cmd+=("-v" "${host_config_dir}:/home/node")
+    docker_run_cmd+=("-v" "$(pwd):/workspace")
+    docker_run_cmd+=("-e" "HOST_UID=$(id -u)")
+    docker_run_cmd+=("-e" "HOST_GID=$(id -g)")
+
+    # Add context mount argument if file exists
+    local context_file="${INBOX_CONFIG_DIR}/CONTEXT.md"
+    if [[ -f "${context_file}" ]]; then
+        echo "CONTEXT.md found, mounting into container."
+        local mount_path=""
+        case "${agent_name}" in
+            gemini)
+                mount_path="/home/node/.gemini/GEMINI.md"
+                ;;
+            claude)
+                mount_path="/home/node/.claude/CLAUDE.md"
+                ;;
+        esac
+        if [[ -n "${mount_path}" ]]; then
+            docker_run_cmd+=("-v" "${context_file}:${mount_path}")
+        fi
+    fi
+
+    docker_run_cmd+=("${final_image_name}")
+
+    if [[ ${#final_agent_args[@]} -gt 0 ]]; then
+        docker_run_cmd+=("${final_agent_args[@]}")
+    fi
+
     echo "Running ${agent_name} (profile: ${profile_name:-default})..."
-    docker run -it --rm \
-        -v "${host_config_dir}:/home/node" \
-        -v "$(pwd):/workspace" \
-        -e HOST_UID=$(id -u) -e HOST_GID=$(id -g) \
-        "${final_image_name}" \
-        "${final_agent_args[@]+${final_agent_args[@]}}"
+    "${docker_run_cmd[@]}"
 }
 
 # --- Command Parsers ---
@@ -287,10 +312,10 @@ function main() {
             ;;
         version)
             echo "inbox version ${INBOX_VERSION}"
-            ;;
+            ;; 
         -h|--help)
             print_usage
-            ;;
+            ;; 
         *)
             echo "Error: Unknown command '${command}'." >&2
             print_usage

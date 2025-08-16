@@ -41,6 +41,7 @@ inbox version
 ### Interacting with AI
 * Passing Arguments ([Gemini](./docs/gemini/passing_arguments.md)) ([Claude](./docs/claude/passing_arguments.md))
 * Using Memory Files ([Gemini](./docs/gemini/using_memory_files.md)) ([Claude](./docs/claude/using_memory_files.md))
+* [Using a Global Context File](./docs/using_context_file.md)
 * Disabling Non-Essential Traffic ([Claude](./docs/claude/optional_settings.md))
 
 
