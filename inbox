@@ -37,43 +37,54 @@ function print_usage() {
 InBox is a wrapper for running AI agents in a secure, containerized environment.
 
 Usage:
-  inbox [command]
+  inbox [COMMAND] [OPTIONS]
+  inbox <agent> [-p <profile>] [-n] [agent_args...]
 
-Available Commands:
+Description:
+  The main command, without arguments, runs the default agent and profile.
+  Use 'inbox <agent>' to run a specific agent. Any arguments that are not
+  'inbox' options will be passed directly to the agent.
+
+Run Commands:
   gemini                Run the Gemini agent.
   claude                Run the Claude agent.
-  profile               Manage agent configurations (profiles).
-  update                Update inbox to the latest version.
-  version               Show inbox version.
+
+Options for Run Commands:
+  -p, --profile <name>  Use a specific profile for the agent.
+  -n, --no-defaults     Do not use the default arguments for the agent.
 
 Management Commands:
+  profile               Manage agent profiles.
+  update                Update inbox to the latest version.
+  version               Show inbox version.
+  -h, --help            Show this help message.
+
+Profile Subcommands:
   profile list          List all available profiles.
   profile path <agent> [<profile>]
-                        Display the configuration path for a profile.
-  profile default       Show current default agent and profile.
+                        Show the configuration path for a profile.
+  profile default       Show the current default agent and profile.
   profile set-default <agent> [<profile>]
-                        Set the default agent and profile for the 'inbox' command.
-
-Run 'inbox <command> --help' for more information on a specific command.
+                        Set the default agent and profile.
 
 Examples:
+  # Run the default agent and profile
+  inbox
+
   # Start a chat with Gemini using the default profile
   inbox gemini
 
-  # Start a chat with Claude using a specific 'work' profile
-  inbox claude -p work
+  # Start a chat with Claude using a 'user1' profile
+  inbox claude -p user1
 
-  # Pass flags directly to the Gemini agent to get its version
-  inbox gemini -- --version
+  # Pass the --version flag directly to the Gemini agent
+  inbox gemini --version
 
-  # List all your created profiles
+  # List all created profiles
   inbox profile list
 
-  # Set the default command to run 'claude' with the 'personal' profile
+  # Set the default to 'claude' with the 'personal' profile
   inbox profile set-default claude personal
-
-  # After setting a default, just run 'inbox' to launch it
-  inbox
 EOF
 }
 
