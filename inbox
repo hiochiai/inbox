@@ -61,7 +61,7 @@ Management Commands:
 
 Profile Subcommands:
   profile list          List all available profiles.
-  profile path <agent> [<profile>]
+  profile <agent> [<profile>]
                         Show the configuration path for a profile.
   profile default       Show the current default agent and profile.
   profile set-default <agent> [<profile>]
@@ -241,11 +241,12 @@ function handle_profile_command() {
             echo "DEFAULT_PROFILE=${profile}" >> "${DEFAULT_CONFIG_FILE}"
             echo "Default set to agent='${agent}' and profile='${profile:-default}'."
             ;;
-        path)
-            local agent="${1:-}"
-            local profile="${2:-}"
+        *)
+            read -r default_agent default_profile < <(get_default_agent_and_profile)
+            local agent="${sub_command:-${default_agent}}"
+            local profile="${1:-${default_profile}}"
 
-            require_arg "agent" "${agent}" "inbox profile path <agent> [<profile>]"
+            require_arg "agent" "${agent}" "inbox profile [<agent>] [<profile>]"
             validate_agent "${agent}"
 
             local agent_details
@@ -256,11 +257,6 @@ function handle_profile_command() {
                 config_dir_name="${agent_canonical_name}-${profile}"
             fi
             echo "${INBOX_CONFIG_DIR}/${config_dir_name}"
-            ;;
-        *)
-            echo "Error: Unknown profile command '${sub_command}'." >&2
-            print_usage
-            exit 1
             ;;
     esac
 }

@@ -99,7 +99,7 @@ inbox gemini  # Start fresh setup
 inbox profile list
 
 # Check profile path
-inbox profile path gemini my-profile
+inbox profile gemini my-profile
 ```
 
 ## Uninstallation
