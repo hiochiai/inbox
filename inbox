@@ -215,7 +215,7 @@ function handle_profile_command() {
             echo "Available profiles:"
             if [ -d "${INBOX_CONFIG_DIR}" ]; then
                 # Find directories named like 'agent-profile' and format the output
-                (cd "${INBOX_CONFIG_DIR}" && find . -type d -name '*-*' | sed -e 's|./||' -e 's/-/ /' | awk '{print "- "$1" ("$2")"}')
+                (cd "${INBOX_CONFIG_DIR}" && find . -maxdepth 1 -type d | sort | sed -En -e 's:^./(claude|gemini)$:- \1:p' -e 's:^./(claude|gemini)-(.*)$:- \1 (\2):p')
             else
                 echo "No profiles created yet."
             fi
