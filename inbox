@@ -11,10 +11,22 @@ DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
 
 function get_agent_details() {
     case "$1" in
-        gemini) echo "gemini:--yolo" ;; 
-        claude) echo "claude:--dangerously-skip-permissions" ;; 
-        *) return 1 ;; 
+        gemini) echo "--yolo" ;;
+        claude) echo "--dangerously-skip-permissions" ;;
+        *) return 1 ;;
     esac
+}
+
+
+function get_config_dir_name() {
+    local agent_name="$1"
+    local profile_name="${2:-}"
+
+    local config_dir_name="${agent_name}"
+    if [[ -n "${profile_name}" ]]; then
+        config_dir_name="${agent_name}-${profile_name}"
+    fi
+    echo "${config_dir_name}"
 }
 
 function validate_agent() {
@@ -66,6 +78,8 @@ Profile Subcommands:
   profile default       Show the current default agent and profile.
   profile set-default <agent> [<profile>]
                         Set the default agent and profile.
+  profile build-image <agent> [<profile>]
+                        Build a custom container image for a profile.
 
 Examples:
   # Run the default agent and profile
@@ -99,18 +113,17 @@ function get_default_agent_and_profile() {
 }
 
 function run_agent() {
-    local agent_details="$1"
+    local agent_name="$1"
     local profile_name="$2"
     local use_default_args="$3"
     shift 3
     local agent_args=($@)
 
-    IFS=':' read -r agent_name default_args <<< "${agent_details}"
+    local default_args
+    default_args=$(get_agent_details "${agent_name}")
+    local config_dir_name
+    config_dir_name=$(get_config_dir_name "${agent_name}" "${profile_name}")
 
-    local config_dir_name="${agent_name}"
-    if [[ -n "${profile_name}" ]]; then
-        config_dir_name="${agent_name}-${profile_name}"
-    fi
     local host_config_dir="${INBOX_CONFIG_DIR}/${config_dir_name}"
     mkdir -p "${host_config_dir}"
 
@@ -127,11 +140,27 @@ function run_agent() {
 
     # Determine the final Docker image name
     local final_image_name
+    local dockerfile_path="${host_config_dir}/Dockerfile"
+
+    # 1. If INBOX_IMAGE has a tag, use it directly.
     if [[ "${INBOX_IMAGE}" == *":"* ]]; then
-        # If INBOX_IMAGE already has a tag, use it as is
         final_image_name="${INBOX_IMAGE}"
+        echo "Using pre-tagged image from INBOX_IMAGE: ${final_image_name}"
+    # 2. Else, if a Dockerfile exists for the profile...
+    elif [[ -f "${dockerfile_path}" ]]; then
+        local custom_image_tag="${INBOX_IMAGE}:${config_dir_name}"
+        # Check if the custom image has been built
+        if docker image inspect "${custom_image_tag}" >/dev/null 2>&1; then
+            final_image_name="${custom_image_tag}"
+            echo "Using custom image for profile: ${final_image_name}"
+        else
+            # If not built, error out and instruct the user.
+            echo "Error: Dockerfile found at ${dockerfile_path}, but the corresponding image is not built." >&2
+            echo "Please run 'inbox profile build-image ${agent_name} ${profile_name}' to build it." >&2
+            exit 1
+        fi
+    # 3. Otherwise, fall back to the default agent-specific image.
     else
-        # Otherwise, append the agent-specific tag
         final_image_name="${INBOX_IMAGE}:${INBOX_VERSION}-${agent_name}"
     fi
 
@@ -241,6 +270,31 @@ function handle_profile_command() {
             echo "DEFAULT_PROFILE=${profile}" >> "${DEFAULT_CONFIG_FILE}"
             echo "Default set to agent='${agent}' and profile='${profile:-default}'."
             ;;
+        build-image)
+            local agent="${1:-}"
+            local profile="${2:-}"
+
+            local config_dir_name
+            config_dir_name=$(get_config_dir_name "${agent}" "${profile}")
+            local host_config_dir="${INBOX_CONFIG_DIR}/${config_dir_name}"
+            local dockerfile_path="${host_config_dir}/Dockerfile"
+
+            if [[ ! -f "${dockerfile_path}" ]]; then
+                echo "Error: Dockerfile not found at ${dockerfile_path}" >&2
+                exit 1
+            fi
+
+            local custom_image_tag="${INBOX_IMAGE}:${config_dir_name}"
+            echo "Building custom image for ${agent} (profile: ${profile:-default})..."
+            echo "Image will be tagged as: ${custom_image_tag}"
+
+            if docker build -t "${custom_image_tag}" -f "${dockerfile_path}" "${host_config_dir}"; then
+                echo "Build successful."
+            else
+                echo "Error: Docker build failed." >&2
+                exit 1
+            fi
+            ;;
         *)
             read -r default_agent default_profile < <(get_default_agent_and_profile)
             local agent="${sub_command:-${default_agent}}"
@@ -249,13 +303,8 @@ function handle_profile_command() {
             require_arg "agent" "${agent}" "inbox profile [<agent>] [<profile>]"
             validate_agent "${agent}"
 
-            local agent_details
-            agent_details=$(get_agent_details "${agent}")
-            local agent_canonical_name="${agent_details%%:*}"
-            local config_dir_name="${agent_canonical_name}"
-            if [[ -n "${profile}" ]]; then
-                config_dir_name="${agent_canonical_name}-${profile}"
-            fi
+            local config_dir_name
+            config_dir_name=$(get_config_dir_name "${agent}" "${profile}")
             echo "${INBOX_CONFIG_DIR}/${config_dir_name}"
             ;;
     esac
@@ -269,9 +318,7 @@ function main() {
     if [[ $# -eq 0 ]]; then
         read -r default_agent default_profile < <(get_default_agent_and_profile)
         if [[ -n "${default_agent}" ]]; then
-            local agent_details
-            agent_details=$(get_agent_details "${default_agent}")
-            run_agent "${agent_details}" "${default_profile}" "true"
+            run_agent "${default_agent}" "${default_profile}" "true"
         else
             print_usage
             exit 1
@@ -283,9 +330,7 @@ function main() {
     shift
 
     # Check if the command is an agent name
-    local agent_details
-    agent_details=$(get_agent_details "${command}" || true)
-    if [[ -n "${agent_details}" ]]; then
+    if get_agent_details "${command}" >/dev/null 2>&1; then
         local profile=""
         local use_default_args="true"
         local pass_through_args=()
@@ -305,7 +350,8 @@ function main() {
                     ;;
             esac
         done
-        run_agent "${agent_details}" "${profile}" "${use_default_args}" ${pass_through_args[@]+${pass_through_args[@]}}
+        
+        run_agent "${command}" "${profile}" "${use_default_args}" ${pass_through_args[@]+${pass_through_args[@]}}
         return
     fi
 

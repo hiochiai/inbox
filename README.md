@@ -44,6 +44,9 @@ inbox version
 * [Using a Global Context File](./docs/using_context_file.md)
 * Disabling Non-Essential Traffic ([Claude](./docs/claude/optional_settings.md))
 
+### Customization
+* Extending the Container & Custom Tools ([Gemini](./docs/gemini/extending_container.md)) ([Claude](./docs/claude/extending_container.md))
+
 
 ## Configuration
 

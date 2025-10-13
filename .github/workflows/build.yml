@@ -72,6 +72,7 @@ jobs:
         push: true
         tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini
+          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:latest-gemini
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -141,6 +142,7 @@ jobs:
         push: true
         tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude
+          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:latest-claude
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
