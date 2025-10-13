@@ -51,7 +51,7 @@ jobs:
       run: |
         docker manifest inspect ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini${{ steps.gemini-version.outputs.version }} > /dev/null 2>&1 && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=false" >> $GITHUB_OUTPUT
 
-    - name: Build and push Gemini image with version tag
+    - name: Build and push Gemini image
       if: steps.check-image.outputs.exists == 'false'
       uses: docker/build-push-action@v5
       with:
@@ -60,17 +60,6 @@ jobs:
         push: true
         tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini${{ steps.gemini-version.outputs.version }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Build and push Gemini image without version tag
-      if: steps.check-image.outputs.exists == 'false'
-      uses: docker/build-push-action@v5
-      with:
-        context: ./boxes/gemini
-        platforms: linux/amd64,linux/arm64
-        push: true
-        tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:latest-gemini
         cache-from: type=gha
@@ -121,7 +110,7 @@ jobs:
       run: |
         docker manifest inspect ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude${{ steps.claude-version.outputs.version }} > /dev/null 2>&1 && echo "exists=true" >> $GITHUB_OUTPUT || echo "exists=false" >> $GITHUB_OUTPUT
 
-    - name: Build and push Claude image with version tag
+    - name: Build and push Claude image
       if: steps.check-image.outputs.exists == 'false'
       uses: docker/build-push-action@v5
       with:
@@ -130,17 +119,6 @@ jobs:
         push: true
         tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude${{ steps.claude-version.outputs.version }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-
-    - name: Build and push Claude image without version tag
-      if: steps.check-image.outputs.exists == 'false'
-      uses: docker/build-push-action@v5
-      with:
-        context: ./boxes/claude
-        platforms: linux/amd64,linux/arm64
-        push: true
-        tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:latest-claude
         cache-from: type=gha
