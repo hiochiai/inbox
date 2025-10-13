@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Configuration ---
-INBOX_VERSION="0.6.1"
+INBOX_VERSION="0.7.0"
 INBOX_CONFIG_DIR="${HOME}/.inbox"
 INBOX_IMAGE="${INBOX_IMAGE:-ghcr.io/hiochiai/inbox}"
 DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
