@@ -3,14 +3,17 @@ FROM node:24-alpine
 ARG GEMINI_CLI_VERSION=latest
 
 RUN apk add --no-cache \
-    bash \
-    curl \
-    git \
-    shadow \
-    gosu
-
-# Install Gemini CLI globally
-RUN npm install -g @google/gemini-cli@${GEMINI_CLI_VERSION}
+        bash \
+        curl \
+        git \
+        shadow \
+        gosu \
+    && apk add --no-cache --virtual .build-deps \
+        build-base \
+        python3 \
+    && npm install -g @google/gemini-cli@${GEMINI_CLI_VERSION} \
+    && npm cache clean --force \
+    && apk del .build-deps
 
 # Create workspace directory
 RUN mkdir -p /workspace
