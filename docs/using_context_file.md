@@ -6,7 +6,7 @@ This context is shared globally across all agents (Gemini, Claude, etc.).
 
 ### How It Works
 
-If a file named `CONTEXT.md` exists in your `inbox` configuration directory (`~/.inbox/`), it will be automatically mounted into the agent's container on every run.
+If a file named `CONTEXT.md` exists in your `inbox` configuration directory (`~/.inbox/`), it will be automatically copied into the active agent's profile directory on the host (e.g., `~/.inbox/claude/.claude/CLAUDE.md`) before the container starts.
 
 The agent is pre-configured to load this file as part of its initial context.
 
@@ -34,7 +34,7 @@ Once the `~/.inbox/CONTEXT.md` file is created, `inbox` will handle the rest aut
 
 ### Technical Details
 
-For transparency, here is where the `CONTEXT.md` file is mounted inside each agent's container:
+For transparency, the `CONTEXT.md` file (copied from `~/.inbox/CONTEXT.md`) will be made available inside each agent's container at these paths:
 
 -   **Gemini:** `/home/node/.gemini/GEMINI.md`
 -   **Claude:** `/home/node/.claude/CLAUDE.md`

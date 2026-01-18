@@ -170,22 +170,18 @@ function run_agent() {
     docker_run_cmd+=("-e" "HOST_UID=$(id -u)")
     docker_run_cmd+=("-e" "HOST_GID=$(id -g)")
 
-    # Add context mount argument if file exists
+    # Add context file if it exists
     local context_file="${INBOX_CONFIG_DIR}/CONTEXT.md"
     if [[ -f "${context_file}" ]]; then
-        echo "CONTEXT.md found, mounting into container."
-        local mount_path=""
+        echo "CONTEXT.md found, copy it to the config dir."
         case "${agent_name}" in
             gemini)
-                mount_path="/home/node/.gemini/GEMINI.md"
+                cp "${context_file}" "${host_config_dir}/.gemini/GEMINI.md"
                 ;;
             claude)
-                mount_path="/home/node/.claude/CLAUDE.md"
+                cp "${context_file}" "${host_config_dir}/.claude/CLAUDE.md"
                 ;;
         esac
-        if [[ -n "${mount_path}" ]]; then
-            docker_run_cmd+=("-v" "${context_file}:${mount_path}")
-        fi
     fi
 
     docker_run_cmd+=("${final_image_name}")
