@@ -176,9 +176,11 @@ function run_agent() {
         echo "CONTEXT.md found, copy it to the config dir."
         case "${agent_name}" in
             gemini)
+                mkdir -p "${host_config_dir}/.gemini"
                 cp "${context_file}" "${host_config_dir}/.gemini/GEMINI.md"
                 ;;
             claude)
+                mkdir -p "${host_config_dir}/.claude"
                 cp "${context_file}" "${host_config_dir}/.claude/CLAUDE.md"
                 ;;
         esac
