@@ -8,6 +8,7 @@ RUN apk add --no-cache \
         git \
         shadow \
         gosu \
+        sudo \
     && apk add --no-cache --virtual .build-deps \
         build-base \
         python3 \

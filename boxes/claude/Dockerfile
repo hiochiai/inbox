@@ -7,7 +7,8 @@ RUN apk add --no-cache \
     curl \
     git \
     shadow \
-    gosu
+    gosu \
+    sudo
 
 # Install Claude Code globally
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
