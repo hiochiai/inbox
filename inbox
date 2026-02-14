@@ -182,22 +182,6 @@ function run_agent() {
         fi
     fi
 
-    # Add context file if it exists
-    local context_file="${INBOX_CONFIG_DIR}/CONTEXT.md"
-    if [[ -f "${context_file}" ]]; then
-        echo "CONTEXT.md found, copy it to the config dir."
-        case "${agent_name}" in
-            gemini)
-                mkdir -p "${host_config_dir}/.gemini"
-                cp "${context_file}" "${host_config_dir}/.gemini/GEMINI.md"
-                ;;
-            claude)
-                mkdir -p "${host_config_dir}/.claude"
-                cp "${context_file}" "${host_config_dir}/.claude/CLAUDE.md"
-                ;;
-        esac
-    fi
-
     docker_run_cmd+=("${final_image_name}")
 
     if [[ ${#final_agent_args[@]} -gt 0 ]]; then
