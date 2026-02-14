@@ -64,6 +64,7 @@ Run Commands:
 Options for Run Commands:
   -p, --profile <name>  Use a specific profile for the agent.
   -n, --no-defaults     Do not use the default arguments for the agent.
+  -A, --ssh-agent       Enable SSH Agent forwarding to the container.
 
 Management Commands:
   profile               Manage agent profiles.
@@ -116,7 +117,8 @@ function run_agent() {
     local agent_name="$1"
     local profile_name="$2"
     local use_default_args="$3"
-    shift 3
+    local enable_ssh_agent="$4"
+    shift 4
     local agent_args=($@)
 
     local default_args
@@ -169,6 +171,16 @@ function run_agent() {
     docker_run_cmd+=("-v" "$(pwd):/workspace")
     docker_run_cmd+=("-e" "HOST_UID=$(id -u)")
     docker_run_cmd+=("-e" "HOST_GID=$(id -g)")
+
+    # Add SSH Agent forwarding if requested
+    if [[ "${enable_ssh_agent}" == "true" ]]; then
+        if [[ -z "${SSH_AUTH_SOCK:-}" ]]; then
+            echo "Warning: SSH_AUTH_SOCK is not set. SSH Agent forwarding may not work." >&2
+        else
+            docker_run_cmd+=("-v" "${SSH_AUTH_SOCK}:/run/ssh-agent")
+            docker_run_cmd+=("-e" "SSH_AUTH_SOCK=/run/ssh-agent")
+        fi
+    fi
 
     # Add context file if it exists
     local context_file="${INBOX_CONFIG_DIR}/CONTEXT.md"
@@ -331,6 +343,7 @@ function main() {
     if get_agent_details "${command}" >/dev/null 2>&1; then
         local profile=""
         local use_default_args="true"
+        local enable_ssh_agent="false"
         local pass_through_args=()
         while [[ $# -gt 0 ]]; do
             case "$1" in
@@ -342,6 +355,10 @@ function main() {
                     use_default_args="false"
                     shift
                     ;;
+                -A|--ssh-agent)
+                    enable_ssh_agent="true"
+                    shift
+                    ;;
                 *)
                     pass_through_args+=("$1")
                     shift
@@ -349,7 +366,7 @@ function main() {
             esac
         done
         
-        run_agent "${command}" "${profile}" "${use_default_args}" ${pass_through_args[@]+${pass_through_args[@]}}
+        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" ${pass_through_args[@]+${pass_through_args[@]}}
         return
     fi
 
