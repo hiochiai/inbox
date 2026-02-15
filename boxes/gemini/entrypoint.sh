@@ -12,8 +12,11 @@ chmod 440 /etc/sudoers.d/node-apk
 groupmod -g "$HOST_GID" node 2>/dev/null || true
 usermod -u "$HOST_UID" -g "$HOST_GID" node 2>/dev/null || true
 
-# Fix ownership of workspace and node home directory
-chown -R node:node /workspace /home/node $SSH_AUTH_SOCK 2>/dev/null || true
+# Fix ownership of node home directory
+chown -R node:node /home/node 2>/dev/null || true
+if [[ -n "${SSH_AUTH_SOCK:-}" ]]; then
+	chown node:node "${SSH_AUTH_SOCK}" 2>/dev/null || true
+fi
 
 # Execute the command as the node user
 exec gosu node /usr/local/bin/gemini "$@"
