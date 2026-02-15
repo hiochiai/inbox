@@ -170,7 +170,6 @@ function run_agent() {
     docker_run_cmd+=("-v" "${host_config_dir}:/home/node")
     docker_run_cmd+=("-v" "$(pwd):/workspace")
     docker_run_cmd+=("-e" "HOST_UID=$(id -u)")
-    docker_run_cmd+=("-e" "HOST_GID=$(id -g)")
 
     # Add SSH Agent forwarding if requested
     if [[ "${enable_ssh_agent}" == "true" ]]; then
