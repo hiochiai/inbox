@@ -15,5 +15,12 @@ if [[ -n "${SSH_AUTH_SOCK:-}" ]]; then
 	chown node:node "${SSH_AUTH_SOCK}" 2>/dev/null || true
 fi
 
+# Fix permissions for Docker socket (DooD)
+if [[ -S "/var/run/docker.sock" ]]; then
+	DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
+	addgroup -g "$DOCKER_GID" docker 2>/dev/null || true
+	addgroup node docker 2>/dev/null || true
+fi
+
 # Execute the command as the node user
 exec gosu node /usr/local/bin/gemini "$@"

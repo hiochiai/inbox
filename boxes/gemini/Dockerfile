@@ -5,6 +5,7 @@ ARG GEMINI_CLI_VERSION=latest
 RUN apk add --no-cache \
         bash \
         curl \
+        docker-cli \
         git \
         openssh-client \
         shadow \
