@@ -10,7 +10,8 @@ RUN apk add --no-cache \
     openssh-client \
     shadow \
     gosu \
-    sudo
+    sudo \
+    coreutils
 
 # Install Claude Code globally
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}

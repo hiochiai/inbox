@@ -3,14 +3,15 @@ FROM node:24-alpine
 ARG GEMINI_CLI_VERSION=latest
 
 RUN apk add --no-cache \
-        bash \
-        curl \
-        docker-cli \
-        git \
-        openssh-client \
-        shadow \
-        gosu \
-        sudo \
+    bash \
+    curl \
+    docker-cli \
+    git \
+    openssh-client \
+    shadow \
+    gosu \
+    sudo \
+    coreutils \
     && apk add --no-cache --virtual .build-deps \
         build-base \
         python3 \
