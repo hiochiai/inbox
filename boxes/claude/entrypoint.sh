@@ -17,9 +17,8 @@ fi
 
 # Fix permissions for Docker socket (DooD)
 if [[ -S "/var/run/docker.sock" ]]; then
-	DOCKER_GID=$(stat -c '%g' /var/run/docker.sock)
-	addgroup -g "$DOCKER_GID" docker 2>/dev/null || true
-	addgroup node docker 2>/dev/null || true
+	DOCKER_GROUP=$(stat -c '%G' /var/run/docker.sock)
+	usermod -aG node "$DOCKER_GROUP"
 fi
 
 # Execute the command as the node user
