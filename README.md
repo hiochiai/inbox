@@ -72,7 +72,7 @@ InBox stores configurations in `~/.inbox/` with the following structure:
     └── .claude/...
 ```
 
-Each profile directory is mounted to `/home/node` inside the container, allowing agents to access their configurations seamlessly.
+Each profile directory is mounted to `/home/inbox` inside the container, allowing agents to access their configurations seamlessly.
 
 
 ## Troubleshooting
