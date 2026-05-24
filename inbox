@@ -173,7 +173,7 @@ function run_agent() {
     fi
 
     local docker_run_cmd=("docker" "run" "-it" "--rm")
-    docker_run_cmd+=("-v" "${host_config_dir}:/home/node")
+    docker_run_cmd+=("-v" "${host_config_dir}:/home/inbox")
     docker_run_cmd+=("-v" "$(pwd):/workspace")
     docker_run_cmd+=("-e" "HOST_UID=$(id -u)")
 

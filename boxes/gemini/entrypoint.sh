@@ -3,23 +3,23 @@
 # Get host user UID from environment variable
 HOST_UID=${HOST_UID:-1000}
 
-# Give node user password-less sudo access to apk
-echo "node ALL=(ALL) NOPASSWD: /sbin/apk" > /etc/sudoers.d/node-apk
-chmod 440 /etc/sudoers.d/node-apk
+# Give inbox user password-less sudo access to apk
+echo "inbox ALL=(ALL) NOPASSWD: /sbin/apk" > /etc/sudoers.d/inbox-apk
+chmod 440 /etc/sudoers.d/inbox-apk
 
-# Update node user's UID to match host user
-usermod -u "$HOST_UID" node 2>/dev/null || true
+# Update inbox user's UID to match host user
+usermod -u "$HOST_UID" inbox 2>/dev/null || true
 
 # Fix ownership of SSH_AUTH_SOCK
 if [[ -n "${SSH_AUTH_SOCK:-}" ]]; then
-	chown node:node "${SSH_AUTH_SOCK}" 2>/dev/null || true
+	chown inbox:inbox "${SSH_AUTH_SOCK}" 2>/dev/null || true
 fi
 
 # Fix permissions for Docker socket (DooD)
 if [[ -S "/var/run/docker.sock" ]]; then
 	DOCKER_GROUP=$(stat -c '%G' /var/run/docker.sock)
-	usermod -aG "$DOCKER_GROUP" node
+	usermod -aG "$DOCKER_GROUP" inbox
 fi
 
-# Execute the command as the node user
-exec gosu node /usr/local/bin/gemini "$@"
+# Execute the command as the inbox user
+exec gosu inbox /usr/local/bin/gemini "$@"

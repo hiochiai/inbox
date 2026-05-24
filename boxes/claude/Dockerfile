@@ -17,6 +17,11 @@ RUN apk add --no-cache \
 # Install Claude Code globally
 RUN npm install -g @anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}
 
+# Rename node user to inbox
+RUN usermod -l inbox node && \
+    usermod -d /home/inbox -m inbox && \
+    groupmod -n inbox node
+
 # Create workspace directory
 RUN mkdir -p /workspace
 

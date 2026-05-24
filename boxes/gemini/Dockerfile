@@ -20,6 +20,11 @@ RUN apk add --no-cache \
     && npm cache clean --force \
     && apk del .build-deps
 
+# Rename node user to inbox
+RUN usermod -l inbox node && \
+    usermod -d /home/inbox -m inbox && \
+    groupmod -n inbox node
+
 # Create workspace directory
 RUN mkdir -p /workspace
 

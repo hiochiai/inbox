@@ -36,6 +36,6 @@ Place a `GEMINI.md` file in your profile directory to provide persistent context
 
 Inside the Gemini container, the memory file is available at:
 
-- **Path:** `/home/node/.gemini/GEMINI.md`
+- **Path:** `/home/inbox/.gemini/GEMINI.md`
 
 The agent automatically loads this file when starting, so you don't need to enable any settings. To disable this feature, simply delete or rename the `GEMINI.md` file.
