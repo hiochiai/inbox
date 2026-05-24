@@ -28,25 +28,23 @@ inbox version
 
 ## Usage
 
-### Getting Started
-* Getting Started ([Gemini](./docs/gemini/getting_started.md)) ([Claude](./docs/claude/getting_started.md))
-* Getting Started with GOOGLE_CLOUD_PROJECT ([Gemini](./docs/gemini/google_cloud_project.md))
+### Documentation Matrix
 
-### Profile Management
+| Topic | Gemini CLI | Claude Code |
+| :--- | :---: | :---: |
+| **Getting Started** | [Guide](./docs/gemini/getting_started.md) | [Guide](./docs/claude/getting_started.md) |
+| **Google Cloud Project** | [Guide](./docs/gemini/google_cloud_project.md) | - |
+| **Creating Profiles** | [Guide](./docs/gemini/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) |
+| **Switching Profiles** | [Guide](./docs/gemini/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) |
+| **Set Default Profile** | [Guide](./docs/gemini/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) |
+| **Passing Arguments** | - | [Guide](./docs/claude/passing_arguments.md) |
+| **Using Memory Files** | [Guide](./docs/gemini/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) |
+| **Custom Tools (DooD)** | [Guide](./docs/gemini/extending_container.md) | [Guide](./docs/claude/extending_container.md) |
+| **Optional Settings** | - | [Guide](./docs/claude/optional_settings.md) |
+
+### Common Topics
 * [Default Startup](./docs/default_startup.md)
-* Creating Profiles ([Gemini](./docs/gemini/creating_profiles.md)) ([Claude](./docs/claude/creating_profiles.md))
-* Switching Profiles ([Gemini](./docs/gemini/switching_profiles.md)) ([Claude](./docs/claude/switching_profiles.md))
-* Setting a Default Profile ([Gemini](./docs/gemini/setting_default_profile.md)) ([Claude](./docs/claude/setting_default_profile.md))
-
-### Interacting with AI
-* Passing Arguments & Overrides ([Gemini](./docs/gemini/passing_arguments.md)) ([Claude](./docs/claude/passing_arguments.md))
-* Using Memory Files ([Gemini](./docs/gemini/using_memory_files.md)) ([Claude](./docs/claude/using_memory_files.md))
-* Disabling Non-Essential Traffic ([Claude](./docs/claude/optional_settings.md))
-
-### Customization
 * [Docker outside of Docker (DooD)](./docs/docker_outside_of_docker.md)
-* Extending the Container & Custom Tools ([Gemini](./docs/gemini/extending_container.md)) ([Claude](./docs/claude/extending_container.md))
-
 
 ## Configuration
 
@@ -58,7 +56,7 @@ InBox stores configurations in `~/.inbox/` with the following structure:
 
 ```
 ~/.inbox/
-├── gemini/                    # Default Gemini profile
+├── gemini/                   # Default Gemini profile
 │   └── .gemini/
 │       ├── settings.json
 │       └── GEMINI.md         # Optional memory file
