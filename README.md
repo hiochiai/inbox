@@ -33,17 +33,17 @@ inbox version
 
 ### Documentation Matrix
 
-| Topic | Antigravity CLI | Gemini CLI (Deprecated) | Claude Code |
+| Topic | Antigravity CLI | Claude Code | Gemini CLI (Deprecated) |
 | :--- | :---: | :---: | :---: |
-| **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/gemini/getting_started.md) | [Guide](./docs/claude/getting_started.md) |
-| **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | [Guide](./docs/gemini/google_cloud_project.md) | - |
-| **Creating Profiles** | [Guide](./docs/antigravity/creating_profiles.md) | [Guide](./docs/gemini/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) |
-| **Switching Profiles** | [Guide](./docs/antigravity/switching_profiles.md) | [Guide](./docs/gemini/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) |
-| **Set Default Profile** | [Guide](./docs/antigravity/setting_default_profile.md) | [Guide](./docs/gemini/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) |
-| **Passing Arguments** | [Guide](./docs/antigravity/passing_arguments.md) | [Guide](./docs/gemini/passing_arguments.md) | [Guide](./docs/claude/passing_arguments.md) |
-| **Using Memory Files** | [Guide](./docs/antigravity/using_memory_files.md) | [Guide](./docs/gemini/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) |
-| **Custom Tools (DooD)** | [Guide](./docs/antigravity/extending_container.md) | [Guide](./docs/gemini/extending_container.md) | [Guide](./docs/claude/extending_container.md) |
-| **Optional Settings** | - | - | [Guide](./docs/claude/optional_settings.md) |
+| **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/claude/getting_started.md) | [Guide](./docs/gemini/getting_started.md) |
+| **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | - | [Guide](./docs/gemini/google_cloud_project.md) |
+| **Creating Profiles** | [Guide](./docs/antigravity/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) | [Guide](./docs/gemini/creating_profiles.md) |
+| **Switching Profiles** | [Guide](./docs/antigravity/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) | [Guide](./docs/gemini/switching_profiles.md) |
+| **Set Default Profile** | [Guide](./docs/antigravity/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) | [Guide](./docs/gemini/setting_default_profile.md) |
+| **Passing Arguments** | [Guide](./docs/antigravity/passing_arguments.md) | [Guide](./docs/claude/passing_arguments.md) | [Guide](./docs/gemini/passing_arguments.md) |
+| **Using Memory Files** | [Guide](./docs/antigravity/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) | [Guide](./docs/gemini/using_memory_files.md) |
+| **Custom Tools (DooD)** | [Guide](./docs/antigravity/extending_container.md) | [Guide](./docs/claude/extending_container.md) | [Guide](./docs/gemini/extending_container.md) |
+| **Optional Settings** | - | [Guide](./docs/claude/optional_settings.md) | - |
 
 ### Common Topics
 * [Default Startup](./docs/default_startup.md)
@@ -63,18 +63,18 @@ InBox stores configurations in `~/.inbox/` with the following structure:
 │   └── .gemini/
 │       ├── antigravity-cli/...
 │       └── GEMINI.md         # Optional memory file
-├── gemini/                   # Default Gemini profile
-│   └── .gemini/
-│       ├── settings.json
-│       └── GEMINI.md         # Optional memory file
-├── gemini-work/              # Named profile example
-│   └── .gemini/...
 ├── claude/                   # Default Claude profile  
 │   └── .claude/
 │       ├── settings.json
 │       └── CLAUDE.md         # Optional memory file
-└── claude-personal/          # Named profile example
-    └── .claude/...
+├── claude-personal/          # Named profile example
+│   └── .claude/...
+├── gemini/                   # Default Gemini profile
+│   └── .gemini/
+│       ├── settings.json
+│       └── GEMINI.md         # Optional memory file
+└── gemini-work/              # Named profile example
+    └── .gemini/...
 ```
 
 Each profile directory is mounted to `/home/inbox` inside the container, allowing agents to access their configurations seamlessly.
@@ -97,8 +97,8 @@ sudo usermod -aG docker $USER
 **Authentication Issues**
 ```bash
 # Clear profile and re-authenticate
-rm -rf ~/.inbox/gemini
-inbox gemini  # Start fresh setup
+rm -rf ~/.inbox/claude
+inbox claude  # Start fresh setup
 ```
 
 **Profile Not Found**
@@ -107,7 +107,7 @@ inbox gemini  # Start fresh setup
 inbox profile list
 
 # Check profile path
-inbox profile gemini my-profile
+inbox profile claude my-profile
 ```
 
 ## Uninstallation
