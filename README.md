@@ -1,6 +1,9 @@
 # InBox
 
-**InBox** is a containerized sandbox wrapper for AI agents like Gemini CLI and Claude Code. It provides a secure, isolated environment for AI interactions without requiring local installation of Node.js or agent-specific dependencies.
+**InBox** is a containerized sandbox wrapper for AI agents like Antigravity CLI and Claude Code. It provides a secure, isolated environment for AI interactions without requiring local installation of Node.js or agent-specific dependencies.
+
+> [!WARNING]
+> The Gemini agent is deprecated.
 
 ## Why InBox?
 
@@ -30,7 +33,7 @@ inbox version
 
 ### Documentation Matrix
 
-| Topic | Antigravity CLI | Gemini CLI | Claude Code |
+| Topic | Antigravity CLI | Gemini CLI (Deprecated) | Claude Code |
 | :--- | :---: | :---: | :---: |
 | **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/gemini/getting_started.md) | [Guide](./docs/claude/getting_started.md) |
 | **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | [Guide](./docs/gemini/google_cloud_project.md) | - |
