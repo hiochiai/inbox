@@ -30,17 +30,17 @@ inbox version
 
 ### Documentation Matrix
 
-| Topic | Gemini CLI | Claude Code |
-| :--- | :---: | :---: |
-| **Getting Started** | [Guide](./docs/gemini/getting_started.md) | [Guide](./docs/claude/getting_started.md) |
-| **Google Cloud Project** | [Guide](./docs/gemini/google_cloud_project.md) | - |
-| **Creating Profiles** | [Guide](./docs/gemini/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) |
-| **Switching Profiles** | [Guide](./docs/gemini/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) |
-| **Set Default Profile** | [Guide](./docs/gemini/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) |
-| **Passing Arguments** | - | [Guide](./docs/claude/passing_arguments.md) |
-| **Using Memory Files** | [Guide](./docs/gemini/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) |
-| **Custom Tools (DooD)** | [Guide](./docs/gemini/extending_container.md) | [Guide](./docs/claude/extending_container.md) |
-| **Optional Settings** | - | [Guide](./docs/claude/optional_settings.md) |
+| Topic | Antigravity CLI | Gemini CLI | Claude Code |
+| :--- | :---: | :---: | :---: |
+| **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/gemini/getting_started.md) | [Guide](./docs/claude/getting_started.md) |
+| **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | [Guide](./docs/gemini/google_cloud_project.md) | - |
+| **Creating Profiles** | [Guide](./docs/antigravity/creating_profiles.md) | [Guide](./docs/gemini/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) |
+| **Switching Profiles** | [Guide](./docs/antigravity/switching_profiles.md) | [Guide](./docs/gemini/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) |
+| **Set Default Profile** | [Guide](./docs/antigravity/setting_default_profile.md) | [Guide](./docs/gemini/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) |
+| **Passing Arguments** | [Guide](./docs/antigravity/passing_arguments.md) | [Guide](./docs/gemini/passing_arguments.md) | [Guide](./docs/claude/passing_arguments.md) |
+| **Using Memory Files** | [Guide](./docs/antigravity/using_memory_files.md) | [Guide](./docs/gemini/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) |
+| **Custom Tools (DooD)** | [Guide](./docs/antigravity/extending_container.md) | [Guide](./docs/gemini/extending_container.md) | [Guide](./docs/claude/extending_container.md) |
+| **Optional Settings** | - | - | [Guide](./docs/claude/optional_settings.md) |
 
 ### Common Topics
 * [Default Startup](./docs/default_startup.md)
@@ -56,6 +56,10 @@ InBox stores configurations in `~/.inbox/` with the following structure:
 
 ```
 ~/.inbox/
+├── antigravity/               # Default Antigravity profile
+│   └── .gemini/
+│       ├── antigravity-cli/...
+│       └── GEMINI.md         # Optional memory file
 ├── gemini/                   # Default Gemini profile
 │   └── .gemini/
 │       ├── settings.json

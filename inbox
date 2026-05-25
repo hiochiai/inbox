@@ -11,6 +11,7 @@ DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
 
 function get_agent_details() {
     case "$1" in
+        antigravity) echo "--dangerously-skip-permissions" ;;
         gemini) echo "--yolo" ;;
         claude) echo "--dangerously-skip-permissions" ;;
         *) return 1 ;;
@@ -31,7 +32,7 @@ function get_config_dir_name() {
 
 function validate_agent() {
     get_agent_details "$1" >/dev/null || {
-        echo "Error: Invalid agent '$1'. Use 'gemini' or 'claude'." >&2
+        echo "Error: Invalid agent '$1'. Use 'antigravity', 'gemini' or 'claude'." >&2
         exit 1
     }
 }
@@ -58,6 +59,7 @@ Description:
   'inbox' options will be passed directly to the agent.
 
 Run Commands:
+  antigravity           Run the Antigravity agent (agy).
   gemini                Run the Gemini agent.
   claude                Run the Claude agent.
 
@@ -88,8 +90,8 @@ Examples:
   # Run the default agent and profile
   inbox
 
-  # Start a chat with Gemini using the default profile
-  inbox gemini
+  # Start a chat with Antigravity
+  inbox antigravity
 
   # Start a chat with Claude using a 'user1' profile
   inbox claude -p user1
@@ -251,7 +253,7 @@ function handle_profile_command() {
             echo "Available profiles:"
             if [ -d "${INBOX_CONFIG_DIR}" ]; then
                 # Find directories named like 'agent-profile' and format the output
-                (cd "${INBOX_CONFIG_DIR}" && find . -maxdepth 1 -type d | sort | sed -En -e 's:^./(claude|gemini)$:- \1:p' -e 's:^./(claude|gemini)-(.*)$:- \1 (\2):p')
+                (cd "${INBOX_CONFIG_DIR}" && find . -maxdepth 1 -type d | sort | sed -En -e 's:^./(antigravity|claude|gemini)$:- \1:p' -e 's:^./(antigravity|claude|gemini)-(.*)$:- \1 (\2):p')
             else
                 echo "No profiles created yet."
             fi
