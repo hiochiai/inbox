@@ -50,41 +50,29 @@ function print_usage() {
 InBox is a wrapper for running AI agents in a secure, containerized environment.
 
 Usage:
-  inbox [COMMAND] [OPTIONS]
-  inbox <agent> [-p <profile>] [-n] [agent_args...]
+  inbox <agent> [-p <profile>] [-n] [-A] [-D <path>] [agent_args...]
+  inbox [command] [command_options]
 
-Description:
-  The main command, without arguments, runs the default agent and profile.
-  Use 'inbox <agent>' to run a specific agent. Any arguments that are not
-  'inbox' options will be passed directly to the agent.
-
-Run Commands:
+Agents:
   antigravity           Run the Antigravity agent (agy).
   gemini                Run the Gemini agent.
   claude                Run the Claude agent.
 
-Options for Run Commands:
+Options:
   -p, --profile <name>  Use a specific profile for the agent.
   -n, --no-defaults     Do not use the default arguments for the agent.
   -A, --ssh-agent       Enable SSH Agent forwarding to the container.
   -D, --docker-socket <path>
                         Mount Docker socket for DooD (Docker outside of Docker).
+  agent_options...      Additional arguments passed directly to the agent.
 
-Management Commands:
+Commands:
   profile               Manage agent profiles.
   update                Update inbox to the latest version.
   version               Show inbox version.
-  -h, --help            Show this help message.
 
-Profile Subcommands:
-  profile list          List all available profiles.
-  profile <agent> [<profile>]
-                        Show the configuration path for a profile.
-  profile default       Show the current default agent and profile.
-  profile set-default <agent> [<profile>]
-                        Set the default agent and profile.
-  profile build-image <agent> [<profile>]
-                        Build a custom container image for a profile.
+Help:
+  -h, --help            Show this help message.
 
 Examples:
   # Run the default agent and profile
@@ -99,9 +87,32 @@ Examples:
   # Run with Docker socket mounted (DooD)
   inbox claude -D /var/run/docker.sock
 
-  # Pass the --version flag directly to the Gemini agent
-  inbox gemini --version
+  # Pass the --version flag directly to the agent
+  inbox antigravity --version
 
+  # Use 'inbox profile -h' for more details.
+  inbox profile -h
+EOF
+}
+
+function print_help_profile() {
+    cat <<EOF
+Usage:
+  inbox profile [SUBCOMMAND] [ARGUMENTS]
+
+Description:
+  Manage agent profiles and custom container images.
+
+Subcommands:
+  list                  List all available profiles.
+  default               Show the current default agent and profile.
+  set-default <agent> [<profile>]
+                        Set the default agent and profile.
+  build-image <agent> [<profile>]
+                        Build a custom container image for a profile.
+  <agent> [<profile>]   Show the configuration path for a profile.
+
+Examples:
   # List all created profiles
   inbox profile list
 
@@ -247,6 +258,10 @@ function handle_update_command() {
 
 function handle_profile_command() {
     local sub_command="${1:-}"
+    if [[ "${sub_command}" == "-h" || "${sub_command}" == "--help" ]]; then
+        print_help_profile
+        return
+    fi
     shift || true
     case "${sub_command}" in
         list)
