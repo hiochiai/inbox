@@ -21,5 +21,12 @@ if [[ -S "/var/run/docker.sock" ]]; then
 	usermod -aG "$DOCKER_GROUP" inbox
 fi
 
+# In CI (e.g. GitLab Runner docker executor), the runner passes its job shell
+# as the command. Run it as the inbox user instead of forcing the agent binary,
+# so the job script can invoke the agent itself after the setup above.
+if [[ -n "${CI:-}" ]] && command -v "${1:-}" >/dev/null 2>&1; then
+	exec gosu inbox "$@"
+fi
+
 # Execute the command as the inbox user
 exec gosu inbox /usr/local/bin/gemini "$@"

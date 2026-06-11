@@ -48,6 +48,7 @@ inbox version
 ### Common Topics
 * [Default Startup](./docs/default_startup.md)
 * [Docker outside of Docker (DooD)](./docs/docker_outside_of_docker.md)
+* [Running in CI (GitLab Runner)](./docs/running_in_ci.md)
 
 ## Configuration
 
