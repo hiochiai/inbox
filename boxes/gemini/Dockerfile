@@ -18,20 +18,16 @@ RUN apk add --no-cache \
         python3 \
     && npm install -g @google/gemini-cli@${GEMINI_CLI_VERSION} \
     && npm cache clean --force \
-    && apk del .build-deps
-
-# Rename node user to inbox
-RUN usermod -l inbox node && \
-    usermod -d /home/inbox -m inbox && \
-    groupmod -n inbox node
-
-# Create workspace directory
-RUN mkdir -p /workspace
+    && apk del .build-deps \
+    && usermod -l inbox node \
+    && usermod -d /home/inbox -m inbox \
+    && groupmod -n inbox node \
+    && mkdir -p /workspace
 
 # Create entrypoint script
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+

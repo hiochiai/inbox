@@ -1,6 +1,6 @@
 FROM debian:13-slim
 
-# Install necessary runtime and CLI tools
+# Install necessary runtime, user setup, and Antigravity CLI
 RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
     curl \
@@ -11,23 +11,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     coreutils \
     ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create inbox user
-RUN groupadd inbox && \
-    useradd -m -g inbox -d /home/inbox inbox
-
-# Install Antigravity CLI
-RUN curl -fsSL https://antigravity.google/cli/install.sh | bash
-RUN install /root/.local/bin/agy /usr/local/bin/agy
-
-# Create workspace directory
-RUN mkdir -p /workspace
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd inbox \
+    && useradd -m -g inbox -d /home/inbox inbox \
+    && curl -fsSL https://antigravity.google/cli/install.sh | bash \
+    && install /root/.local/bin/agy /usr/local/bin/agy \
+    && rm -rf /root/.local/bin/agy /root/.cache/antigravity \
+    && mkdir -p /workspace
 
 # Create entrypoint script
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
