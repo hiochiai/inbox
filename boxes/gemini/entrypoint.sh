@@ -7,8 +7,8 @@ HOST_UID=${HOST_UID:-1000}
 echo "inbox ALL=(ALL) NOPASSWD: /sbin/apk" > /etc/sudoers.d/inbox-apk
 chmod 440 /etc/sudoers.d/inbox-apk
 
-# Update inbox user's UID to match host user
-usermod -u "$HOST_UID" inbox 2>/dev/null || true
+# Update inbox user's UID to match host user. Keep setup messages out of command output.
+usermod -u "$HOST_UID" inbox >/dev/null 2>&1 || true
 
 # Fix ownership of SSH_AUTH_SOCK
 if [[ -n "${SSH_AUTH_SOCK:-}" ]]; then
