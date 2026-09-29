@@ -1,3 +1,12 @@
 ## Default Profile Startup
 
-If you run `inbox` without any arguments, it will automatically start with the default profile. The default profile is determined by the first profile created, unless a different default is set manually.
+Run `inbox profile set-default <agent> [<profile>]` to choose the agent and profile started by `inbox` without arguments. Creating a profile does not automatically make it the default. If no default is set, `inbox` displays its usage information.
+
+```bash
+# Use the default Codex profile when running inbox without arguments
+inbox profile set-default codex
+inbox
+
+# Show the current default
+inbox profile default
+```

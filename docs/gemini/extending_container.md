@@ -30,7 +30,7 @@ This feature enables you to expand the capabilities of the AI agent, allowing it
     > [!IMPORTANT]
     > You **must** use the official `inbox` image in the `FROM` instruction. Using a different base image will cause the core functionalities of `inbox` to be lost.
 
-    **Sample Dockerfile (`~/.inbox/work/Dockerfile`)**
+    **Sample Dockerfile (`~/.inbox/gemini-work/Dockerfile`)**
     ```dockerfile
     # Use the inbox Gemini image as the base
     FROM ghcr.io/hiochiai/inbox:latest-gemini

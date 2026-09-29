@@ -13,6 +13,7 @@ function get_agent_details() {
     case "$1" in
         antigravity) echo "--dangerously-skip-permissions" ;;
         claude) echo "--dangerously-skip-permissions" ;;
+        codex) echo "--dangerously-bypass-approvals-and-sandbox" ;;
         gemini) echo "--yolo" ;;
         *) return 1 ;;
     esac
@@ -32,7 +33,7 @@ function get_config_dir_name() {
 
 function validate_agent() {
     get_agent_details "$1" >/dev/null || {
-        echo "Error: Invalid agent '$1'. Use 'antigravity', 'claude' or 'gemini'." >&2
+        echo "Error: Invalid agent '$1'. Use 'antigravity', 'claude', 'codex' or 'gemini'." >&2
         exit 1
     }
 }
@@ -56,6 +57,7 @@ Usage:
 Agents:
   antigravity           Run the Antigravity agent (agy).
   claude                Run the Claude agent.
+  codex                 Run the Codex agent.
   gemini                Run the Gemini agent.
 
 Options:
@@ -268,7 +270,7 @@ function handle_profile_command() {
             echo "Available profiles:"
             if [ -d "${INBOX_CONFIG_DIR}" ]; then
                 # Find directories named like 'agent-profile' and format the output
-                (cd "${INBOX_CONFIG_DIR}" && find . -maxdepth 1 -type d | sort | sed -En -e 's:^./(antigravity|claude|gemini)$:- \1:p' -e 's:^./(antigravity|claude|gemini)-(.*)$:- \1 (\2):p')
+                (cd "${INBOX_CONFIG_DIR}" && find . -maxdepth 1 -type d | sort | sed -En -e 's:^./(antigravity|claude|codex|gemini)$:- \1:p' -e 's:^./(antigravity|claude|codex|gemini)-(.*)$:- \1 (\2):p')
             else
                 echo "No profiles created yet."
             fi

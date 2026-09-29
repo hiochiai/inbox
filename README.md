@@ -1,6 +1,6 @@
 # InBox
 
-**InBox** is a containerized sandbox wrapper for AI agents like Antigravity CLI and Claude Code. It provides a secure, isolated environment for AI interactions without requiring local installation of Node.js or agent-specific dependencies.
+**InBox** is a containerized sandbox wrapper for AI agents like Antigravity CLI, Claude Code, and Codex CLI. It provides a secure, isolated environment for AI interactions without requiring local installation of Node.js or agent-specific dependencies.
 
 > [!WARNING]
 > The Gemini agent is deprecated.
@@ -33,17 +33,17 @@ inbox version
 
 ### Documentation Matrix
 
-| Topic | Antigravity CLI | Claude Code | Gemini CLI (Deprecated) |
-| :--- | :---: | :---: | :---: |
-| **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/claude/getting_started.md) | [Guide](./docs/gemini/getting_started.md) |
-| **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | - | [Guide](./docs/gemini/google_cloud_project.md) |
-| **Creating Profiles** | [Guide](./docs/antigravity/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) | [Guide](./docs/gemini/creating_profiles.md) |
-| **Switching Profiles** | [Guide](./docs/antigravity/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) | [Guide](./docs/gemini/switching_profiles.md) |
-| **Set Default Profile** | [Guide](./docs/antigravity/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) | [Guide](./docs/gemini/setting_default_profile.md) |
-| **Passing Arguments** | [Guide](./docs/antigravity/passing_arguments.md) | [Guide](./docs/claude/passing_arguments.md) | [Guide](./docs/gemini/passing_arguments.md) |
-| **Using Memory Files** | [Guide](./docs/antigravity/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) | [Guide](./docs/gemini/using_memory_files.md) |
-| **Custom Tools (DooD)** | [Guide](./docs/antigravity/extending_container.md) | [Guide](./docs/claude/extending_container.md) | [Guide](./docs/gemini/extending_container.md) |
-| **Optional Settings** | - | [Guide](./docs/claude/optional_settings.md) | - |
+| Topic | Antigravity CLI | Claude Code | Codex CLI | Gemini CLI (Deprecated) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/claude/getting_started.md) | [Guide](./docs/codex/getting_started.md) | [Guide](./docs/gemini/getting_started.md) |
+| **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | - | - | [Guide](./docs/gemini/google_cloud_project.md) |
+| **Creating Profiles** | [Guide](./docs/antigravity/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) | [Guide](./docs/codex/creating_profiles.md) | [Guide](./docs/gemini/creating_profiles.md) |
+| **Switching Profiles** | [Guide](./docs/antigravity/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) | [Guide](./docs/codex/switching_profiles.md) | [Guide](./docs/gemini/switching_profiles.md) |
+| **Set Default Profile** | [Guide](./docs/antigravity/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) | [Guide](./docs/codex/setting_default_profile.md) | [Guide](./docs/gemini/setting_default_profile.md) |
+| **Passing Arguments** | [Guide](./docs/antigravity/passing_arguments.md) | [Guide](./docs/claude/passing_arguments.md) | [Guide](./docs/codex/passing_arguments.md) | [Guide](./docs/gemini/passing_arguments.md) |
+| **Using Memory Files** | [Guide](./docs/antigravity/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) | [Guide](./docs/codex/using_memory_files.md) | [Guide](./docs/gemini/using_memory_files.md) |
+| **Custom Tools (DooD)** | [Guide](./docs/antigravity/extending_container.md) | [Guide](./docs/claude/extending_container.md) | [Guide](./docs/codex/extending_container.md) | [Guide](./docs/gemini/extending_container.md) |
+| **Optional Settings** | - | [Guide](./docs/claude/optional_settings.md) | [Guide](./docs/codex/optional_settings.md) | - |
 
 ### Common Topics
 * [Default Startup](./docs/default_startup.md)
@@ -70,6 +70,11 @@ InBox stores configurations in `~/.inbox/` with the following structure:
 │       └── CLAUDE.md         # Optional memory file
 ├── claude-personal/          # Named profile example
 │   └── .claude/...
+├── codex/                    # Default Codex profile
+│   └── .codex/
+│       ├── auth.json         # Cached authentication (keep private)
+│       ├── config.toml
+│       └── AGENTS.md         # Optional instructions
 ├── gemini/                   # Default Gemini profile
 │   └── .gemini/
 │       ├── settings.json
