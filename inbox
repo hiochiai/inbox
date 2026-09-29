@@ -140,7 +140,7 @@ function run_agent() {
     local enable_ssh_agent="$4"
     local docker_socket="$5"
     shift 5
-    local agent_args=($@)
+    local agent_args=("$@")
 
     local default_args
     default_args=$(get_agent_details "${agent_name}")
@@ -387,7 +387,7 @@ function main() {
             esac
         done
 
-        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" "${docker_socket}" ${pass_through_args[@]+${pass_through_args[@]}}
+        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" "${docker_socket}" ${pass_through_args[@]+"${pass_through_args[@]}"}
         return
     fi
 
