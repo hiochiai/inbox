@@ -132,6 +132,8 @@ jobs:
       with:
         context: ./boxes/claude
         platforms: linux/amd64,linux/arm64
+        build-args: |
+          CLAUDE_CODE_VERSION=${{ steps.claude-version.outputs.version }}
         push: true
         tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-claude${{ steps.claude-version.outputs.version }}
@@ -277,6 +279,8 @@ jobs:
       with:
         context: ./boxes/gemini
         platforms: linux/amd64,linux/arm64
+        build-args: |
+          GEMINI_CLI_VERSION=${{ steps.gemini-version.outputs.version }}
         push: true
         tags: |
           ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-gemini${{ steps.gemini-version.outputs.version }}
