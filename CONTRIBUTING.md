@@ -37,7 +37,7 @@ Run on each supported architecture before claiming compatibility. The existing C
 
 The launcher version is in `inbox`. The workflow publishes a script asset on `v*` tags after launcher tests and image jobs succeed. Maintainers should keep the tag and script version equal, and describe user-visible changes and migration requirements in release notes. Daily image rebuilds can move version/agent tags; these are not immutable dependency locks.
 
-For a future release, call out the breaking requirement to put all agent arguments after `--`, migration examples, and missing-option-value diagnostics. Do not claim these are in v0.14.1. No release is created by this documentation change.
+Version v0.15.0 introduces the breaking requirement to put all agent arguments after `--` and adds missing-option-value diagnostics. Release notes should include migration examples; v0.14.1 does not support the separator.
 
 ## Issues
 

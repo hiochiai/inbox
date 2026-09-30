@@ -23,4 +23,4 @@ inbox gemini -n
 
 ### Migration from v0.14.1
 
-This source revision requires the separator for agent arguments. Replace `inbox gemini --help` with `inbox gemini -- --help`. The v0.14.1 release forwards unknown arguments implicitly and does not support this separator. Until a new release is published, use [source installation](../installation.md#from-a-checkout).
+InBox v0.15.0 and newer require the separator for agent arguments. Replace `inbox gemini --help` with `inbox gemini -- --help`. The v0.14.1 release forwards unknown arguments implicitly and does not support this separator. Use v0.15.0 or newer for this syntax.

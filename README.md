@@ -124,7 +124,7 @@ inbox claude -p work -D /var/run/docker.sock  # Give access to host Docker
 
 Before `--`, only InBox options (`-p`, `-n`, `-A`, `-D` and their long forms) are accepted. All agent arguments must follow `--`; unknown options or positional arguments before it are errors. The first separator is removed; subsequent arguments are forwarded unchanged. `--` alone is allowed and adds no agent arguments. Repeated InBox profile/socket options use the last value. Give option values as separate, non-empty arguments that do not start with `-`; joined forms such as `-pwork`, `--profile=work`, and combined flags such as `-nA` are not supported.
 
-**Breaking change from v0.14.1:** implicit argument forwarding has been removed. Replace `inbox claude --help` with `inbox claude -- --help`, and `inbox codex "Explain this project"` with `inbox codex -- "Explain this project"`. The v0.14.1 release does not support the separator. Until a new release is published, [install from this checkout](./docs/installation.md#from-a-checkout).
+**Breaking change from v0.14.1:** implicit argument forwarding has been removed. Replace `inbox claude --help` with `inbox claude -- --help`, and `inbox codex "Explain this project"` with `inbox codex -- "Explain this project"`. The v0.14.1 release does not support the separator. Use InBox v0.15.0 or newer for this syntax.
 
 Host environment variables are not forwarded automatically. SSH forwarding permits use of loaded keys; Docker socket access can grant control over the Docker host. See [security boundaries](./docs/security.md) and [Docker integration](./docs/docker_outside_of_docker.md).
 
