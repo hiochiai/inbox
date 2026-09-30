@@ -1,5 +1,7 @@
 ## Quick Start for Gemini
 
+Gemini is deprecated in InBox. Its launcher and image build remain; this is an InBox status, not a statement that upstream Gemini CLI is deprecated.
+
 ### 1. Initial Setup
 
 ```bash

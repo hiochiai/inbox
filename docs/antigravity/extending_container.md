@@ -11,12 +11,13 @@ inbox profile antigravity
 
 ### 2. Create Dockerfile
 
-In that directory, create a `Dockerfile`:
+Create the directory printed above if needed, then place a `Dockerfile` there:
 
 ```dockerfile
 FROM ghcr.io/hiochiai/inbox:latest-antigravity
 
-RUN sudo apk add --no-cache python3 py3-pip
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
 ```
 
 ### 3. Build the Image
@@ -32,3 +33,7 @@ inbox antigravity
 ```
 
 The container will now include the additional tools you installed.
+
+### Keep credentials out of builds
+
+The build context is the entire profile home. Add a `.dockerignore` before building; exclude everything except required build inputs. Never `COPY` agent credentials into an image. See the [minimal example](../../examples/claude-go/README.md) for a Dockerfile and matching ignore file.

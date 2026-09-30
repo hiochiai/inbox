@@ -14,12 +14,14 @@ Place a `GEMINI.md` file in your profile directory to provide persistent context
 
    ```bash
    # Create an empty memory file
+   mkdir -p ~/.inbox/antigravity/.gemini
    touch ~/.inbox/antigravity/.gemini/GEMINI.md
    ```
 
    For a named profile, replace `antigravity` with `antigravity-<profile-name>`:
 
    ```bash
+   mkdir -p ~/.inbox/antigravity-myprofile/.gemini
    touch ~/.inbox/antigravity-myprofile/.gemini/GEMINI.md
    ```
 

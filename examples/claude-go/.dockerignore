@@ -1,0 +1,4 @@
+# The build context is a profile home: never send credentials to the builder.
+**
+!Dockerfile
+!.dockerignore

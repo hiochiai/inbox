@@ -14,12 +14,14 @@ Place a `GEMINI.md` file in your profile directory to provide persistent context
 
    ```bash
    # Create an empty memory file
+   mkdir -p ~/.inbox/gemini/.gemini
    touch ~/.inbox/gemini/.gemini/GEMINI.md
    ```
 
    For a named profile, replace `gemini` with `gemini-<profile-name>`:
 
    ```bash
+   mkdir -p ~/.inbox/gemini-myprofile/.gemini
    touch ~/.inbox/gemini-myprofile/.gemini/GEMINI.md
    ```
 

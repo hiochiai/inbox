@@ -47,3 +47,7 @@ inbox codex -p work -D /var/run/docker.sock
 ```
 
 See [Docker outside of Docker](../docker_outside_of_docker.md) for setup details and the implications of granting access to the host daemon.
+
+### Keep credentials out of builds
+
+The build context is the entire profile home. Add a `.dockerignore` before building; exclude everything except required build inputs. Never `COPY` agent credentials into an image. See the [minimal example](../../examples/claude-go/README.md) for a Dockerfile and matching ignore file.

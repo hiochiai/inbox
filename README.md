@@ -1,135 +1,138 @@
-# InBox
+# InBox — Local Coding Agent Runtime
 
-**InBox** is a containerized sandbox wrapper for AI agents like Antigravity CLI, Claude Code, and Codex CLI. It provides a secure, isolated environment for AI interactions without requiring local installation of Node.js or agent-specific dependencies.
+Run coding agents in disposable Docker containers with persistent, reusable profiles.
+Keep work and personal logins, settings, and tools separate—without installing agent dependencies on your host.
 
-> [!WARNING]
-> The Gemini agent is deprecated.
+[![CI](https://github.com/hiochiai/inbox/actions/workflows/build.yml/badge.svg)](https://github.com/hiochiai/inbox/actions/workflows/build.yml)
+
+- **A home for each identity:** separate agent credentials, configuration, and home-directory state.
+- **Throw away the container, keep the profile:** return to your setup on the next run.
+- **Your tools, per profile:** extend an agent image with a Dockerfile.
+- **One small CLI:** choose the agent, profile, and project; forward the agent's own arguments.
+- **Ask another agent:** with Docker access enabled, Claude can launch a Codex container with its own profile for a second opinion. [Handoff recipe](./examples/agent-handoff/README.md).
+
+```bash
+# Run from your project directory; exit each session before the next command
+inbox claude -p work
+inbox claude -p personal   # Separate login and settings
+inbox codex -p work       # Separate Codex home; no shared Claude credentials
+```
+
+**Runtime defaults:** InBox adds flags that skip agent approval prompts. Your project and profile are writable. Use `-n` to omit those flags; it does not add container hardening. [Security model](./docs/security.md).
 
 ## Why InBox?
 
-- **🔒 Secure Isolation**: AI agents run in isolated Docker containers
-- **🧹 Clean Host System**: No need to install Node.js or dependencies locally  
-- **⚡ Full Command Access**: Containerized environment supports all commands safely
-- **👤 Multi-Profile Support**: Easy switching between authenticated users and project configurations
-- **🚀 Zero Setup**: Just Docker required - everything else is handled automatically
+You can write your own `docker run` wrapper. InBox keeps the recurring parts together: profile homes, image selection, custom image builds, user-ID setup, argument forwarding, and optional host connections.
 
-## Prerequisites
+The useful unit is **agent × profile × environment × project**: choose an agent and profile, use its default or custom image, and mount your current directory. You can reuse the same profile across projects. There is no InBox account, daemon, or cloud service; agents still connect to their providers.
 
-- Docker (running and accessible)
+Choose InBox when you want a small, readable tool for managing local AI CLI environments. Agent-native sandboxes and Docker Sandboxes focus on execution boundaries; devcontainers offer broader project and editor configuration. InBox focuses on reusable profiles and a consistent launch command. [Design and alternatives](./docs/positioning.md).
 
-## Installation
+## Quick start
+
+You need **Bash, curl, and a running Docker installation with Linux container support**, plus access to your chosen agent provider. No host Node.js installation is needed. Images are built for `linux/amd64` and `linux/arm64`. Linux and macOS are the intended host environments; Windows requires a Bash/Linux environment such as WSL2 and is not covered by host integration tests.
+
+### 1. Install
+
+Download the release script into a user-owned directory; no `sudo` is needed:
 
 ```bash
-# Download and install InBox
-curl -L -o inbox https://github.com/hiochiai/inbox/releases/latest/download/inbox
-chmod +x inbox
-sudo mv inbox /usr/local/bin/
-
-# Verify installation
+mkdir -p "$HOME/.local/bin" &&
+  curl -fL https://github.com/hiochiai/inbox/releases/latest/download/inbox -o "$HOME/.local/bin/inbox" &&
+  chmod +x "$HOME/.local/bin/inbox"
+export PATH="$HOME/.local/bin:$PATH"
 inbox version
 ```
 
-## Usage
+Keep the `PATH` export in your shell startup file if this directory is not already on your path. This installs executable code from GitHub; you can inspect the downloaded script before `chmod` and execution. [Pinned installation, updates, and removal](./docs/installation.md).
 
-### Documentation Matrix
+### 2. Run and authenticate
 
-| Topic | Antigravity CLI | Claude Code | Codex CLI | Gemini CLI (Deprecated) |
-| :--- | :---: | :---: | :---: | :---: |
-| **Getting Started** | [Guide](./docs/antigravity/getting_started.md) | [Guide](./docs/claude/getting_started.md) | [Guide](./docs/codex/getting_started.md) | [Guide](./docs/gemini/getting_started.md) |
-| **Google Cloud Project** | [Guide](./docs/antigravity/google_cloud_project.md) | - | - | [Guide](./docs/gemini/google_cloud_project.md) |
-| **Creating Profiles** | [Guide](./docs/antigravity/creating_profiles.md) | [Guide](./docs/claude/creating_profiles.md) | [Guide](./docs/codex/creating_profiles.md) | [Guide](./docs/gemini/creating_profiles.md) |
-| **Switching Profiles** | [Guide](./docs/antigravity/switching_profiles.md) | [Guide](./docs/claude/switching_profiles.md) | [Guide](./docs/codex/switching_profiles.md) | [Guide](./docs/gemini/switching_profiles.md) |
-| **Set Default Profile** | [Guide](./docs/antigravity/setting_default_profile.md) | [Guide](./docs/claude/setting_default_profile.md) | [Guide](./docs/codex/setting_default_profile.md) | [Guide](./docs/gemini/setting_default_profile.md) |
-| **Passing Arguments** | [Guide](./docs/antigravity/passing_arguments.md) | [Guide](./docs/claude/passing_arguments.md) | [Guide](./docs/codex/passing_arguments.md) | [Guide](./docs/gemini/passing_arguments.md) |
-| **Using Memory Files** | [Guide](./docs/antigravity/using_memory_files.md) | [Guide](./docs/claude/using_memory_files.md) | [Guide](./docs/codex/using_memory_files.md) | [Guide](./docs/gemini/using_memory_files.md) |
-| **Custom Tools (DooD)** | [Guide](./docs/antigravity/extending_container.md) | [Guide](./docs/claude/extending_container.md) | [Guide](./docs/codex/extending_container.md) | [Guide](./docs/gemini/extending_container.md) |
-| **Optional Settings** | - | [Guide](./docs/claude/optional_settings.md) | [Guide](./docs/codex/optional_settings.md) | - |
+From a project directory you are comfortable letting the agent edit:
 
-### Common Topics
-* [Default Startup](./docs/default_startup.md)
-* [Docker outside of Docker (DooD)](./docs/docker_outside_of_docker.md)
-* [Running in CI (GitLab Runner)](./docs/running_in_ci.md)
-
-## Configuration
-
-InBox uses a profile concept to manage settings for each AI. This allows you to switch between different configurations for various tasks or projects.
-
-### Directory Structure
-
-InBox stores configurations in `~/.inbox/` with the following structure:
-
-```
-~/.inbox/
-├── antigravity/               # Default Antigravity profile
-│   └── .gemini/
-│       ├── antigravity-cli/...
-│       └── GEMINI.md         # Optional memory file
-├── claude/                   # Default Claude profile  
-│   └── .claude/
-│       ├── settings.json
-│       └── CLAUDE.md         # Optional memory file
-├── claude-personal/          # Named profile example
-│   └── .claude/...
-├── codex/                    # Default Codex profile
-│   └── .codex/
-│       ├── auth.json         # Cached authentication (keep private)
-│       ├── config.toml
-│       └── AGENTS.md         # Optional instructions
-├── gemini/                   # Default Gemini profile
-│   └── .gemini/
-│       ├── settings.json
-│       └── GEMINI.md         # Optional memory file
-└── gemini-work/              # Named profile example
-    └── .gemini/...
-```
-
-Each profile directory is mounted to `/home/inbox` inside the container, allowing agents to access their configurations seamlessly.
-
-
-## Troubleshooting
-
-### Common Issues
-
-**Docker Permission Errors**
 ```bash
-# Ensure Docker is running and accessible
-docker ps
-
-# On Linux, add user to docker group
-sudo usermod -aG docker $USER
-# Then logout and login again
+inbox claude -p work -n
 ```
 
-**Authentication Issues**
+The first run downloads the image and creates `~/.inbox/claude-work`. Follow Claude's terminal login instructions, opening the displayed URL in your host browser. Credentials saved in the container home persist in this profile. Image download and provider login time vary.
+
+Prefer Codex? Use `inbox codex -p work -n` and select **Sign in with Device Code**; browser localhost callbacks are not exposed by the launcher. [Codex login guide](./docs/codex/getting_started.md).
+
+### 3. Switch identities
+
+Exit the agent, then start a separate profile and sign in with the other account:
+
 ```bash
-# Clear profile and re-authenticate
-rm -rf ~/.inbox/claude
-inbox claude  # Start fresh setup
+inbox claude -p personal -n
+# Later, return to the existing work login and settings
+inbox claude -p work -n
 ```
 
-**Profile Not Found**
+Once you understand the writable mounts and approval behavior, omitting `-n` uses InBox's autonomous defaults.
+
+## What a profile contains
+
+A profile is a **persistent container home**, scoped to an agent and a name. It holds whatever the agent writes there: credentials, settings, caches, and session state. An optional Dockerfile selects a custom tool environment after an explicit build. It is not a shared identity provider or a separate copy of your project.
+
+```text
+Host                                      Disposable container
+~/.inbox/claude-work/  ── read-write ──▶   /home/inbox
+  credentials, settings, state             Claude Code
+current project/      ── read-write ──▶   /workspace
+                                           tools from selected image
+                     container exits → removed
+                     profile + project → remain on host
+```
+
+`inbox claude` uses `~/.inbox/claude`; `inbox claude -p work` uses `~/.inbox/claude-work`. `inbox codex -p work` has its own `~/.inbox/codex-work`. Names do not synchronize credentials between agents. Use simple names such as `work`, `personal`, or `customer-a`.
+
 ```bash
-# List available profiles
 inbox profile list
-
-# Check profile path
-inbox profile claude my-profile
+inbox profile claude work              # Print the home directory path
+inbox profile set-default claude work
+inbox                                 # Launch the selected default
 ```
 
-## Uninstallation
+`set-default` affects bare `inbox`; it does not change what `inbox claude` selects. Tools installed elsewhere in a running container disappear at exit; put repeatable tools in a [custom profile image](./examples/claude-go/README.md).
+
+## Agents
+
+| CLI | InBox command | Status / login guide |
+| --- | --- | --- |
+| Claude Code | `inbox claude` | [Available](./docs/claude/getting_started.md) |
+| Codex CLI | `inbox codex` | [Available](./docs/codex/getting_started.md) |
+| Antigravity CLI (`agy`) | `inbox antigravity` | [Available](./docs/antigravity/getting_started.md) |
+| Gemini CLI | `inbox gemini` | [Deprecated in InBox](./docs/gemini/getting_started.md); implementation and image build remain |
+
+OpenCode is not currently supported. These are launch integrations; upstream authentication and settings remain agent-specific.
+
+## Let agents use other agent environments
+
+Enable Docker access and an agent can run build/test containers or invoke another InBox agent image. For example, Claude can ask Codex to review the project using a separate Codex profile, then read its output. Each agent can use its own image and tools.
+
+This uses ordinary Docker commands with explicit host paths and non-interactive agent arguments; there is no built-in scheduler or conversation transfer. Docker socket access grants broad authority over the Docker host. See the [Claude → Codex recipe and verification limits](./examples/agent-handoff/README.md).
+
+## Arguments and host integrations
 
 ```bash
-# Remove InBox binary
-sudo rm /usr/local/bin/inbox
-
-# Remove all configurations and profiles
-rm -rf ~/.inbox
-
-# Remove Docker image
-docker images --format "{{.Repository}}:{{.Tag}}" \
-  | grep '^ghcr.io/hiochiai/inbox:' \
-  | xargs docker rmi
+inbox claude --help                    # Agent help
+inbox --help                          # InBox help
+inbox claude -p work -A                # Forward SSH agent explicitly
+inbox claude -p work -D /var/run/docker.sock  # Give access to host Docker
 ```
 
-> [!WARNING]
-> Removing `~/.inbox` will delete all your profiles and authentication data.
+InBox consumes `-p`, `-n`, `-A`, and `-D` (and their long forms). Other arguments are passed to the agent. Options that conflict with InBox options cannot be forwarded directly.
+
+Host environment variables are not forwarded automatically. SSH forwarding permits use of loaded keys; Docker socket access can grant control over the Docker host. See [security boundaries](./docs/security.md) and [Docker integration](./docs/docker_outside_of_docker.md).
+
+## Documentation
+
+- [Install, update, troubleshoot, uninstall](./docs/installation.md)
+- [Security model](./docs/security.md) · [Default startup](./docs/default_startup.md)
+- [Agent-specific guides](./docs/README.md): profiles, memory files, settings, arguments, and custom images
+- [Custom Go tools example](./examples/claude-go/README.md) · [Claude → Codex handoff](./examples/agent-handoff/README.md)
+- [Running images in CI](./docs/running_in_ci.md) · [MCP configuration](./docs/slack_mcp.md)
+- [Contributing and adding an agent](./CONTRIBUTING.md)
+- [Positioning and roadmap](./docs/positioning.md)
+
+[MIT licensed](./LICENSE). Found a useful setup? Share the agent, profile use case, and Dockerfile—with credentials removed—in an issue.

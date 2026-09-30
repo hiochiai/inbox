@@ -1,20 +1,13 @@
-## Passing Arguments to Antigravity
-
-You can pass arguments directly to the Antigravity agent (`agy`) by appending them to the `inbox` command.
-
-### Examples
+## Passing arguments to Antigravity
 
 ```bash
-# Show version
 inbox antigravity --version
-
-# Run a specific prompt non-interactively
-inbox antigravity -p "Refactor this file"
+inbox antigravity --help
 ```
 
-### Disabling Default Arguments
+InBox consumes `-p` as its profile selector. It is not an Antigravity prompt option. Check agent help for alternatives to conflicting options.
 
-InBox uses `--dangerously-skip-permissions` by default for Antigravity. To disable this, use `-n` or `--no-defaults`:
+InBox adds `--dangerously-skip-permissions` by default. Omit it with:
 
 ```bash
 inbox antigravity -n

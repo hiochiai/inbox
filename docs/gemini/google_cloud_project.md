@@ -32,7 +32,9 @@ inbox gemini
 You can set your project ID for the default profile with this command:
 
 ```bash
-cat << EOF >$(inbox profile gemini)/.gemini/.env
+mkdir -p "$(inbox profile gemini)/.gemini"
+# Merge into an existing .env instead of overwriting other entries
+cat << EOF >"$(inbox profile gemini)/.gemini/.env"
 GOOGLE_CLOUD_PROJECT=your-project-id
 EOF
 ```

@@ -57,3 +57,7 @@ This feature enables you to expand the capabilities of the AI agent, allowing it
 
 > [!WARNING]
 > **Security Risk**: This feature allows arbitrary code execution, which is powerful but also carries security risks. Do not use `Dockerfile`s from untrusted sources, as they could lead to unauthorized access to your host system or the installation of malicious software.
+
+### Keep credentials out of builds
+
+The build context is the entire profile home. Add a `.dockerignore` before building; exclude everything except required build inputs. Never `COPY` agent credentials into an image. See the [minimal example](../../examples/claude-go/README.md) for a Dockerfile and matching ignore file.

@@ -14,12 +14,14 @@ Place a `CLAUDE.md` file in your profile directory to provide persistent context
 
    ```bash
    # Create an empty memory file
+   mkdir -p ~/.inbox/claude/.claude
    touch ~/.inbox/claude/.claude/CLAUDE.md
    ```
 
    For a named profile, replace `claude` with `claude-<profile-name>`:
 
    ```bash
+   mkdir -p ~/.inbox/claude-myprofile/.claude
    touch ~/.inbox/claude-myprofile/.claude/CLAUDE.md
    ```
 

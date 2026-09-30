@@ -1,23 +1,13 @@
 ## Quick Start for Claude
 
-### 1. Start Authentication
+Run from a project directory you are comfortable letting Claude edit:
 
 ```bash
-inbox claude
+inbox claude -p work -n
 ```
 
-### 2. Authenticate in Browser
+Follow the CLI login instructions. Open the displayed URL in your host browser and enter a verification code if requested. Authentication saved in the container home persists under `~/.inbox/claude-work`.
 
-* Copy the displayed URL, open it in your browser, and log in.
-* Copy the verification code and paste it into your terminal.
+Exit and run the same command to reuse it. Use `-p personal` for a separate login and settings.
 
-### 3. Container Setup
-
-* When prompted about "Bypass Permissions mode," select "Yes" (this is required for the container environment).
-
-### 4. Start Using Claude
-
-```bash
-inbox claude
-```
-
+InBox normally adds `--dangerously-skip-permissions`; `-n` omits it. Bypass mode is not required by Docker. See the [security model](../security.md).
