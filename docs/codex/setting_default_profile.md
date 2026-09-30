@@ -1,16 +1,14 @@
-## Setting a Default Codex Profile
+## Set codex as the default
 
-Set the agent and profile to use when running `inbox` without arguments.
+Run in your **host terminal** with InBox installed.
 
 ```bash
-# Set the 'personal' Codex profile as the default
-inbox profile set-default codex personal
-
-# Start the selected default
-inbox
-
-# Show the current default
+inbox profile set-default codex work
 inbox profile default
 ```
 
-To use the unnamed Codex profile as the default, run `inbox profile set-default codex`.
+The output should show this agent and the work profile. Bare inbox launches this selection with approval-bypass defaults; explicit agent commands keep their own profile selection.
+
+See [Set default startup](../default_startup.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
+
+[Documentation index](../README.md) · [codex authentication](./getting_started.md)

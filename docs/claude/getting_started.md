@@ -11,3 +11,6 @@ Follow the CLI login instructions. Open the displayed URL in your host browser a
 Exit and run the same command to reuse it. Use `-p personal` for a separate login and settings.
 
 InBox normally adds `--dangerously-skip-permissions`; `-n` omits it. Bypass mode is not required by Docker. See the [security model](../security.md).
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

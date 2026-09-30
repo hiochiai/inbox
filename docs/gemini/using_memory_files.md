@@ -41,3 +41,5 @@ Inside the Gemini container, the memory file is available at:
 - **Path:** `/home/inbox/.gemini/GEMINI.md`
 
 The agent automatically loads this file when starting, so you don't need to enable any settings. To disable this feature, simply delete or rename the `GEMINI.md` file.
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

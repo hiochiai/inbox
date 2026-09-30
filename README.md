@@ -26,7 +26,7 @@ You can write your own `docker run` wrapper. InBox keeps the recurring parts tog
 
 The useful unit is **agent × profile × environment × project**: choose an agent and profile, use its default or custom image, and mount your current directory. You can reuse the same profile across projects. There is no InBox account, daemon, or cloud service; agents still connect to their providers.
 
-Choose InBox when you want a small, readable tool for managing local AI CLI environments. Agent-native sandboxes and Docker Sandboxes focus on execution boundaries; devcontainers offer broader project and editor configuration. InBox focuses on reusable profiles and a consistent launch command. [Design and alternatives](./docs/positioning.md).
+Choose InBox when you want a small, readable tool for managing local AI CLI environments. Agent-native sandboxes and Docker Sandboxes focus on execution boundaries; devcontainers offer broader project and editor configuration. InBox focuses on reusable profiles and a consistent launch command.
 
 ## Quick start
 
@@ -132,10 +132,11 @@ Host environment variables are not forwarded automatically. SSH forwarding permi
 
 - [Install, update, troubleshoot, uninstall](./docs/installation.md)
 - [Security model](./docs/security.md) · [Default startup](./docs/default_startup.md)
-- [Agent-specific guides](./docs/README.md): profiles, memory files, settings, arguments, and custom images
+- [Documentation index](./docs/README.md) — start, complete a task, look up behavior, or understand the design
+- [First session tutorial](./docs/getting_started.md) · [CLI reference](./docs/cli_reference.md)
+- [Manage profiles](./docs/profiles.md) · [Build custom images](./docs/custom_images.md) · [Profile model](./docs/profile_model.md)
 - [Custom Go tools example](./examples/claude-go/README.md) · [Claude → Codex handoff](./examples/agent-handoff/README.md)
 - [Running images in CI](./docs/running_in_ci.md) · [MCP configuration](./docs/slack_mcp.md)
 - [Contributing and adding an agent](./CONTRIBUTING.md)
-- [Positioning and roadmap](./docs/positioning.md)
 
 [MIT licensed](./LICENSE). Found a useful setup? Share the agent, profile use case, and Dockerfile—with credentials removed—in an issue.

@@ -28,3 +28,6 @@ Place an `AGENTS.md` in your project directory for shared project instructions. 
 Codex combines profile and project instructions; more specific project guidance takes precedence. An `AGENTS.override.md` in the same directory takes priority over `AGENTS.md`. Restart Codex after editing instructions.
 
 See the [official AGENTS.md guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md) for instruction discovery details.
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

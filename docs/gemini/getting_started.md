@@ -29,3 +29,6 @@ Copy the URL displayed in the terminal and open it in your browser.
 inbox gemini
 ```
 
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

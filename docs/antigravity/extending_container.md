@@ -1,41 +1,28 @@
-## Extending the Antigravity Container
+## Add tools to the antigravity image
 
-You can extend the Antigravity container by creating a `Dockerfile` in your profile directory. This example consistently uses the named profile `work`.
-
-### 1. Identify Profile Directory
-
-```bash
-inbox profile antigravity work
-# Output: /home/user/.inbox/antigravity-work
-```
-
-### 2. Create Dockerfile
-
-Create the directory printed above if needed, then place a `Dockerfile` there:
+Follow [build a custom profile image](../custom_images.md), setting `inbox_agent=antigravity` and choosing a named profile. Create the Dockerfile below in that profile home.
 
 ```dockerfile
 FROM ghcr.io/hiochiai/inbox:latest-antigravity
-
 RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip \
     && rm -rf /var/lib/apt/lists/*
 ```
 
-### 3. Build the Image
+This image uses Debian and apt-get. Preserve the base entrypoint. Create the restrictive `.dockerignore` from the common guide **before** building.
+
+For the common guide's `tools` profile, check the result from your **host terminal**:
 
 ```bash
-inbox profile build-image antigravity work
+docker run --rm -e CI=true ghcr.io/hiochiai/inbox:antigravity-tools \
+  sh -c 'python3 --version && pip3 --version'
 ```
 
-### 4. Run
+Expect version information for both tools. Then launch from your project directory:
 
 ```bash
-inbox antigravity -p work
+inbox antigravity -p tools -n
 ```
 
-The container will now include the additional tools you installed.
+The launcher should report that it is using the custom image. Authentication and agent operation require provider access.
 
-For the unnamed profile, place the Dockerfile at `$HOME/.inbox/antigravity/Dockerfile`, build with `inbox profile build-image antigravity`, and run `inbox antigravity`. `inbox profile antigravity` without a profile argument inherits any configured default profile name, so it may return a different directory.
-
-### Keep credentials out of builds
-
-The build context is the entire profile home. Add a `.dockerignore` before building; exclude everything except required build inputs. Never `COPY` agent credentials into an image. See the [minimal example](../../examples/claude-go/README.md) for a Dockerfile and matching ignore file.
+[Documentation index](../README.md) · [Build and rebuild procedure](../custom_images.md)

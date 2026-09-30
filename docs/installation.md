@@ -52,3 +52,5 @@ rm "$HOME/.local/bin/inbox"
 ```
 
 Profiles in `~/.inbox` and Docker images remain. Back up any needed credentials, settings, and sessions before manually deleting selected profiles. Remove unused images through Docker after reviewing what other containers use.
+
+[Documentation index](./README.md) · [CLI reference](./cli_reference.md)

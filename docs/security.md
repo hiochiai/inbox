@@ -39,3 +39,5 @@ For experiments, use a disposable project copy and a dedicated profile. A Git wo
 ### Local-first does not mean offline
 
 InBox adds no account or hosted service. Agents and installed tools can send data to their providers and configured external services. Provider policies and account permissions still apply.
+
+[Documentation index](./README.md) · [CLI reference](./cli_reference.md)

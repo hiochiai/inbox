@@ -29,3 +29,6 @@ Continue in the current session, or start Codex again:
 ```bash
 inbox codex
 ```
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

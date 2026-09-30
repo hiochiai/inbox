@@ -1,16 +1,13 @@
-## Switching Codex Profiles
+## Switch codex profiles
 
-Use the `-p` flag to choose an InBox profile for each session.
+Run in your **host terminal** with InBox installed and Docker running.
 
 ```bash
-# Use the 'personal' profile
-inbox codex -p personal
-
-# Use the 'work' profile
-inbox codex -p work
-
-# Use the unnamed Codex profile
-inbox codex
+inbox codex -p work -n
 ```
 
-Switching profiles does not change the default used when running `inbox` without arguments.
+Exit the current agent session first. This selects the work home without changing the default used by bare inbox.
+
+See [Create and switch profiles](../profiles.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
+
+[Documentation index](../README.md) · [codex authentication](./getting_started.md)

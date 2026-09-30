@@ -1,53 +1,27 @@
-## Extending the Container & Custom Tools
+## Add tools to the codex image
 
-Build a custom image for an InBox profile to keep additional tools installed across sessions.
+Follow [build a custom profile image](../custom_images.md), setting `inbox_agent=codex` and choosing a named profile. Create the Dockerfile below in that profile home.
 
-### Workflow
-
-1. Create and authenticate a profile, then exit Codex:
-
-   ```bash
-   # Create a 'work' profile
-   inbox codex -p work
-   ```
-
-2. Create `~/.inbox/codex-work/Dockerfile` with the following content:
-
-   ```dockerfile
-   FROM ghcr.io/hiochiai/inbox:latest-codex
-
-   # Install additional tools in the Alpine-based Codex image
-   RUN apk add --no-cache go ripgrep
-   ```
-
-   Use the InBox Codex image as the base and retain its entrypoint. For the unnamed profile, place the Dockerfile at `~/.inbox/codex/Dockerfile` instead.
-
-3. Build the custom image:
-
-   ```bash
-   # Rebuild whenever you change the Dockerfile
-   inbox profile build-image codex work
-   ```
-
-4. Start the profile with the custom image:
-
-   ```bash
-   inbox codex -p work
-   ```
-
-If `INBOX_IMAGE` includes an explicit tag, it takes precedence over the profile's custom image.
-
-### Docker outside of Docker
-
-To let Codex use the host's Docker daemon, provide the host socket path:
-
-```bash
-# Start the work profile with Docker access
-inbox codex -p work -D /var/run/docker.sock
+```dockerfile
+FROM ghcr.io/hiochiai/inbox:latest-codex
+RUN apk add --no-cache go ripgrep
 ```
 
-See [Docker outside of Docker](../docker_outside_of_docker.md) for setup details and the implications of granting access to the host daemon.
+This image uses Alpine and apk. Preserve the base entrypoint. Create the restrictive `.dockerignore` from the common guide **before** building.
 
-### Keep credentials out of builds
+For the common guide's `tools` profile, check the result from your **host terminal**:
 
-The build context is the entire profile home. Add a `.dockerignore` before building; exclude everything except required build inputs. Never `COPY` agent credentials into an image. See the [minimal example](../../examples/claude-go/README.md) for a Dockerfile and matching ignore file.
+```bash
+docker run --rm -e CI=true ghcr.io/hiochiai/inbox:codex-tools \
+  sh -c 'go version && rg --version'
+```
+
+Expect version information for both tools. Then launch from your project directory:
+
+```bash
+inbox codex -p tools -n
+```
+
+The launcher should report that it is using the custom image. Authentication and agent operation require provider access.
+
+[Documentation index](../README.md) · [Build and rebuild procedure](../custom_images.md)

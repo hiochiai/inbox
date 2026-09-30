@@ -22,10 +22,10 @@ This section outlines the guidelines for maintaining the quality and consistency
 
 2.  **README.md as Entry Point:**
     -   The root `README.md` is the primary entry point for all documentation. All documentation files should be discoverable from it.
-    -   Links must be relative paths to the files in the `docs` directory.
+    -   Use relative links to documentation and runnable examples. Keep existing URLs working when consolidating pages.
     -   Group links under logical headings (e.g., `Profile Management`).
-    -   For topics with agent-specific documents, list both: `* Topic ([Agent1](./docs/agent1/file.md)) ([Agent2](./docs/agent2/file.md))`
-    -   For common topics, link directly: `* [Topic](./docs/file.md)`
+    -   Use `docs/README.md` as the purpose-oriented index. Link common procedures once; use a compact agent table for authentication, memory, and image differences.
+    -   For common topics, link directly: `* [Manage profiles](./docs/profiles.md)`
 
 3.  **Filenames:** Use descriptive, lowercase, snake_case or kebab-case English filenames (e.g., `creating_profiles.md`).
 

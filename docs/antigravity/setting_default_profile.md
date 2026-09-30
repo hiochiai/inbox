@@ -1,10 +1,14 @@
-## Setting a Default Profile for Antigravity
+## Set antigravity as the default
 
-You can set a default agent and profile so you can just run `inbox` without arguments.
-
-### Set Default
+Run in your **host terminal** with InBox installed.
 
 ```bash
-# Set default to antigravity with 'work' profile
 inbox profile set-default antigravity work
+inbox profile default
 ```
+
+The output should show this agent and the work profile. Bare inbox launches this selection with approval-bypass defaults; explicit agent commands keep their own profile selection.
+
+See [Set default startup](../default_startup.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
+
+[Documentation index](../README.md) · [antigravity authentication](./getting_started.md)

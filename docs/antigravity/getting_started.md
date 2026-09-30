@@ -26,3 +26,6 @@ Copy the URL displayed in the terminal and open it in your browser.
 ```bash
 inbox antigravity
 ```
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

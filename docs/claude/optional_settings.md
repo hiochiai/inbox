@@ -12,3 +12,5 @@ cat << EOF > ~/.inbox/claude/.claude/settings.json
 }
 EOF
 ```
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

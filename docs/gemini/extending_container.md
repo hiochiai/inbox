@@ -1,63 +1,27 @@
-## Extending the Container & Custom Tools
+## Add tools to the gemini image
 
-`inbox` allows you to extend the container environment for each profile to pre-install any custom tools you need, such as `go`, `cargo`, or various other CLI tools.
+Follow [build a custom profile image](../custom_images.md), setting `inbox_agent=gemini` and choosing a named profile. Create the Dockerfile below in that profile home.
 
-This feature enables you to expand the capabilities of the AI agent, allowing it to perform more advanced tasks.
+```dockerfile
+FROM ghcr.io/hiochiai/inbox:latest-gemini
+RUN apk add --no-cache go ripgrep
+```
 
-### Workflow
+This image uses Alpine and apk. Preserve the base entrypoint. Create the restrictive `.dockerignore` from the common guide **before** building.
 
-1.  **Create a Profile**:
-    First, create a profile that will serve as the base for your customizations.
-    ```bash
-    # Create a profile named 'work' for the 'gemini' agent
-    inbox gemini -p work
-    ```
+For the common guide's `tools` profile, check the result from your **host terminal**:
 
-2.  **Place the Dockerfile**:
-    Next, place your custom `Dockerfile` in the profile's configuration directory. The script combines the agent and profile name to create the directory.
+```bash
+docker run --rm -e CI=true ghcr.io/hiochiai/inbox:gemini-tools \
+  sh -c 'go version && rg --version'
+```
 
-    For a named profile like `work`, the path is `~/.inbox/gemini-work/Dockerfile`.
-    ```bash
-    # The profile directory is created automatically, so just place the Dockerfile
-    touch ~/.inbox/gemini-work/Dockerfile
-    ```
-    > [!NOTE]
-    > For the default profile (when no `-p` flag is used), the path is `~/.inbox/gemini/Dockerfile`.
+Expect version information for both tools. Then launch from your project directory:
 
-3.  **Edit the Dockerfile**:
-    Edit the `Dockerfile` to add the commands for installing your desired tools.
+```bash
+inbox gemini -p tools -n
+```
 
-    > [!IMPORTANT]
-    > You **must** use the official `inbox` image in the `FROM` instruction. Using a different base image will cause the core functionalities of `inbox` to be lost.
+The launcher should report that it is using the custom image. Authentication and agent operation require provider access.
 
-    **Sample Dockerfile (`~/.inbox/gemini-work/Dockerfile`)**
-    ```dockerfile
-    # Use the inbox Gemini image as the base
-    FROM ghcr.io/hiochiai/inbox:latest-gemini
-
-    # Example: Install go using apk
-    # RUN apk update && apk add --no-cache go
-    ```
-
-4.  **Build the Custom Image**:
-    Run the `inbox profile build-image` command to build the custom image from your `Dockerfile`. This command is explicit and consistent with other `profile` subcommands. Run it whenever you update your `Dockerfile`.
-
-    ```bash
-    # Build the custom image for the 'work' profile of the 'gemini' agent
-    inbox profile build-image gemini work
-    ```
-
-5.  **Use the Custom Profile**:
-    Once the build is complete, start `inbox` as usual, specifying the agent and profile.
-
-    ```bash
-    # Start a session in the container with custom tools installed
-    inbox gemini -p work
-    ```
-
-> [!WARNING]
-> **Security Risk**: This feature allows arbitrary code execution, which is powerful but also carries security risks. Do not use `Dockerfile`s from untrusted sources, as they could lead to unauthorized access to your host system or the installation of malicious software.
-
-### Keep credentials out of builds
-
-The build context is the entire profile home. Add a `.dockerignore` before building; exclude everything except required build inputs. Never `COPY` agent credentials into an image. See the [minimal example](../../examples/claude-go/README.md) for a Dockerfile and matching ignore file.
+[Documentation index](../README.md) · [Build and rebuild procedure](../custom_images.md)

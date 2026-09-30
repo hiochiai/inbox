@@ -26,3 +26,6 @@ inbox codex -- -c 'web_search="disabled"'
 CLI arguments override file settings. To use approval or sandbox settings from your configuration, omit InBox's default bypass flag with `inbox codex -n`.
 
 See the [official configuration guide](https://learn.chatgpt.com/docs/config-file/config-basic) for available settings and precedence.
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

@@ -43,3 +43,5 @@ Notes:
 
 - Do not override the image `entrypoint` in the job definition. The entrypoint must run so the container is set up before the job script executes.
 - The job script runs as the `inbox` user with `HOME=/home/inbox`, so the agent finds its profile exactly as in interactive use.
+
+[Documentation index](./README.md) · [CLI reference](./cli_reference.md)

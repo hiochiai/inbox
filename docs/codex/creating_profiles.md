@@ -1,10 +1,13 @@
-## Creating Codex Profiles
+## Create a codex profile
 
-Use the `-p` flag to specify a new InBox profile name. InBox creates the profile directory if it does not exist.
+Run in your **host terminal** with InBox installed and Docker running.
 
 ```bash
-# Create a 'personal' profile for Codex
-inbox codex -p personal
+inbox codex -p work -n
 ```
 
-On the first launch, select **Sign in with Device Code** and follow [Getting Started](./getting_started.md). Each profile has its own authentication and settings, stored in `~/.inbox/codex-personal/.codex/` for this example.
+This creates the profile home if it does not exist and launches the agent. Exit before launching another session.
+
+See [Create and switch profiles](../profiles.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
+
+[Documentation index](../README.md) · [codex authentication](./getting_started.md)

@@ -13,3 +13,5 @@ Configure the server in that profile, and install any required runtime using a [
 Prefixing an InBox command with `SLACK_BOT_TOKEN=...` does not forward that variable into the container. Use the agent/server's supported configuration within the profile. Avoid putting secrets in shell history, shared examples, Dockerfiles, or image build contexts.
 
 MCP tools can act on the external services for which you grant credentials, as well as access the mounted project and profile. Review requested permissions and the server implementation. See [security boundaries](./security.md).
+
+[Documentation index](./README.md) · [CLI reference](./cli_reference.md)

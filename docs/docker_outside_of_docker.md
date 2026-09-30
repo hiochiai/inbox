@@ -48,3 +48,5 @@ Mounting the Docker socket gives the container **full control over the host's Do
 - Access volumes and networks
 
 Only use this option when you trust the agent's actions and understand the implications. The `--no-defaults` (`-n`) flag can be used alongside `-D` to disable the agent's autonomous mode, leaving approval behavior to the agent configuration. It does not restrict daemon access. With a rootful daemon, creating containers with host mounts can grant host root control. See the [security model](./security.md).
+
+[Documentation index](./README.md) · [CLI reference](./cli_reference.md)

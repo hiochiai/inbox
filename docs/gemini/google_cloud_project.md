@@ -43,3 +43,6 @@ GOOGLE_CLOUD_PROJECT=your-project-id
 ```
 
 For a named profile such as `work`, edit `$HOME/.inbox/gemini-work/.gemini/.env` instead and launch with `inbox gemini -p work`. Avoid `inbox profile gemini` when locating the unnamed profile: if a default profile name is configured, that command uses it even when the default agent is different.
+
+
+[Documentation index](../README.md) · [Manage profiles](../profiles.md)

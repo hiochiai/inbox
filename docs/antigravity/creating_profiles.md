@@ -1,14 +1,13 @@
-## Creating Profiles for Antigravity
+## Create a antigravity profile
 
-Profiles allow you to maintain separate settings and authentication for different projects or tasks.
-
-### Create a Profile
-
-Use the `-p` or `--profile` option followed by the profile name:
+Run in your **host terminal** with InBox installed and Docker running.
 
 ```bash
-# Create a 'work' profile
-inbox antigravity -p work
+inbox antigravity -p work -n
 ```
 
-Follow the setup prompts as you would for the default profile.
+This creates the profile home if it does not exist and launches the agent. Exit before launching another session.
+
+See [Create and switch profiles](../profiles.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
+
+[Documentation index](../README.md) · [antigravity authentication](./getting_started.md)
