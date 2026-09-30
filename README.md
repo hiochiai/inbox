@@ -115,13 +115,16 @@ This uses ordinary Docker commands with explicit host paths and non-interactive 
 ## Arguments and host integrations
 
 ```bash
-inbox claude --help                    # Agent help
+inbox claude -- --help                    # Agent help
 inbox --help                          # InBox help
+inbox claude -p work -n -- -p "Explain this project"  # Agent's -p, not InBox's
 inbox claude -p work -A                # Forward SSH agent explicitly
 inbox claude -p work -D /var/run/docker.sock  # Give access to host Docker
 ```
 
-InBox consumes `-p`, `-n`, `-A`, and `-D` (and their long forms). Other arguments are passed to the agent. Options that conflict with InBox options cannot be forwarded directly.
+Before `--`, only InBox options (`-p`, `-n`, `-A`, `-D` and their long forms) are accepted. All agent arguments must follow `--`; unknown options or positional arguments before it are errors. The first separator is removed; subsequent arguments are forwarded unchanged. `--` alone is allowed and adds no agent arguments. Repeated InBox profile/socket options use the last value. Give option values as separate, non-empty arguments that do not start with `-`; joined forms such as `-pwork`, `--profile=work`, and combined flags such as `-nA` are not supported.
+
+**Breaking change from v0.14.1:** implicit argument forwarding has been removed. Replace `inbox claude --help` with `inbox claude -- --help`, and `inbox codex "Explain this project"` with `inbox codex -- "Explain this project"`. The v0.14.1 release does not support the separator. Until a new release is published, [install from this checkout](./docs/installation.md#from-a-checkout).
 
 Host environment variables are not forwarded automatically. SSH forwarding permits use of loaded keys; Docker socket access can grant control over the Docker host. See [security boundaries](./docs/security.md) and [Docker integration](./docs/docker_outside_of_docker.md).
 

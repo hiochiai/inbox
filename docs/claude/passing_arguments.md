@@ -1,19 +1,26 @@
-## Passing Arguments to Claude
+## Passing arguments to claude
 
-You can pass arguments directly to the Claude agent. Any arguments that are not recognized by `inbox` will be passed to the agent.
+Put all agent arguments after `--`. Before it, only InBox options are accepted.
 
 ```bash
-# Get the version of the Claude agent
-inbox claude --version
+# Agent help and version
+inbox claude -- --help
+inbox claude -- --version
+
+# Select the InBox profile, then pass options to the agent
+inbox claude -p work -n -- --help
 ```
 
-### Default Arguments
+The first `--` is consumed by InBox. Everything after it is forwarded unchanged, including another `--`, empty strings, and options such as `-p`, `-n`, `-A`, or `-D`. Before the separator, these options belong to InBox. Unknown options and positional arguments before it are errors, even if the agent accepts them.
 
-By default, `inbox` starts the Claude agent with the `--dangerously-skip-permissions` flag to skip permission prompts. This is optional, not a container requirement; the mounted project remains writable.
+### Defaults
 
-If you need to run the agent without this default, use the `-n` or `--no-defaults` flag.
+InBox adds `--dangerously-skip-permissions` by default. Use `-n` before the separator to omit it; approval behavior then depends on the agent configuration. The separator itself does not disable defaults.
 
 ```bash
-# Run Claude without any default arguments
 inbox claude -n
 ```
+
+### Migration from v0.14.1
+
+This source revision requires the separator for agent arguments. Replace `inbox claude --help` with `inbox claude -- --help`. The v0.14.1 release forwards unknown arguments implicitly and does not support this separator. Until a new release is published, use [source installation](../installation.md#from-a-checkout).

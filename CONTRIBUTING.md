@@ -18,7 +18,7 @@ There is no plugin interface. The small explicit integration consists of:
 1. `boxes/<agent>/Dockerfile`: install the CLI and runtime tools; set `/workspace` as working directory; retain `/home/inbox` as the persistent home.
 2. `boxes/<agent>/entrypoint.sh`: perform root-side setup, then `exec gosu inbox <agent-binary> "$@"`. Preserve the CI shell path if supported. Review UID and socket handling for the base distribution.
 3. `inbox`: add the name/default arguments to `get_agent_details`, validation/help, and the profile-list filter. Defaults affecting approvals must be documented and reviewed.
-4. `tests/inbox_arguments.sh`: add the agent to the forwarding cases. Check arguments with spaces, empty strings, metacharacters, profile mounts, and default flags.
+4. `tests/inbox_arguments.sh`: add the agent to the forwarding cases. Check arguments with spaces, empty strings, metacharacters, separator conflicts, profile mounts, and default flags.
 5. `.github/workflows/build.yml`: build and smoke-test both amd64/arm64, publish the matching version/agent tags, and include the build in release dependencies. Check authentication manually without recording secrets.
 6. `docs/<agent>/`: document login inside a container, persistent file locations, arguments, and custom image requirements. Add links to `docs/README.md`, the README agent table, and default-flag documentation.
 
@@ -37,7 +37,7 @@ Run on each supported architecture before claiming compatibility. The existing C
 
 The launcher version is in `inbox`. The workflow publishes a script asset on `v*` tags after launcher tests and image jobs succeed. Maintainers should keep the tag and script version equal, and describe user-visible changes and migration requirements in release notes. Daily image rebuilds can move version/agent tags; these are not immutable dependency locks.
 
-No release is created by this documentation change.
+For a future release, call out the breaking requirement to put all agent arguments after `--`, migration examples, and missing-option-value diagnostics. Do not claim these are in v0.14.1. No release is created by this documentation change.
 
 ## Issues
 

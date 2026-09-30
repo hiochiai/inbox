@@ -46,12 +46,22 @@ function require_arg() {
     fi
 }
 
+# Do not consume another option or the separator as an option value.
+function require_option_value() {
+    require_arg "$1" "${2:-}" "$3"
+    if [[ "$2" == -* ]]; then
+        echo "Error: Expected a value for $1 before '$2'." >&2
+        echo "Usage: $3" >&2
+        exit 1
+    fi
+}
+
 function print_usage() {
     cat <<EOF
-InBox is a wrapper for running AI agents in a secure, containerized environment.
+InBox runs coding agents in disposable Docker containers with persistent profiles.
 
 Usage:
-  inbox <agent> [-p <profile>] [-n] [-A] [-D <path>] [agent_args...]
+  inbox <agent> [-p <profile>] [-n] [-A] [-D <path>] [-- agent_args...]
   inbox [command] [command_options]
 
 Agents:
@@ -66,7 +76,11 @@ Options:
   -A, --ssh-agent       Enable SSH Agent forwarding to the container.
   -D, --docker-socket <path>
                         Mount Docker socket for DooD (Docker outside of Docker).
-  agent_options...      Additional arguments passed directly to the agent.
+  -- <agent_args...>    Pass remaining arguments to the agent unchanged.
+                        Agent arguments require this separator.
+
+Defaults skip agent approval prompts. Use -n to omit those defaults.
+The current directory and selected profile are mounted read-write.
 
 Commands:
   profile               Manage agent profiles.
@@ -90,7 +104,7 @@ Examples:
   inbox claude -D /var/run/docker.sock
 
   # Pass the --version flag directly to the agent
-  inbox antigravity --version
+  inbox antigravity -- --version
 
   # Use 'inbox profile -h' for more details.
   inbox profile -h
@@ -365,6 +379,7 @@ function main() {
         while [[ $# -gt 0 ]]; do
             case "$1" in
                 -p|--profile)
+                    require_option_value "$1" "${2:-}" "inbox <agent> $1 <profile>"
                     profile="$2"
                     shift 2
                     ;;
@@ -377,12 +392,19 @@ function main() {
                     shift
                     ;;
                 -D|--docker-socket)
+                    require_option_value "$1" "${2:-}" "inbox <agent> $1 <path>"
                     docker_socket="$2"
                     shift 2
                     ;;
-                *)
-                    pass_through_args+=("$1")
+                --)
                     shift
+                    pass_through_args+=("$@")
+                    break
+                    ;;
+                *)
+                    echo "Error: Unexpected InBox argument '$1'. Agent arguments must follow --." >&2
+                    echo "Usage: inbox <agent> [inbox_options] [-- agent_args...]" >&2
+                    exit 1
                     ;;
             esac
         done

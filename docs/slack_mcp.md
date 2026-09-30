@@ -5,7 +5,7 @@ InBox runs agent-configured MCP tools inside the selected agent container. It do
 Use the installed agent's MCP help and the chosen server's own setup documentation. For example:
 
 ```bash
-inbox claude -p work -n mcp --help
+inbox claude -p work -n -- mcp --help
 ```
 
 Configure the server in that profile, and install any required runtime using a [custom image](./claude/extending_container.md). The Antigravity image is Debian-based and does not currently install Node.js or npx; examples requiring npx need those dependencies added first.

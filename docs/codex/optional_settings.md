@@ -20,7 +20,7 @@ For a single session, override the setting on the command line:
 
 ```bash
 # Disable web search for this session
-inbox codex -c 'web_search="disabled"'
+inbox codex -- -c 'web_search="disabled"'
 ```
 
 CLI arguments override file settings. To use approval or sandbox settings from your configuration, omit InBox's default bypass flag with `inbox codex -n`.

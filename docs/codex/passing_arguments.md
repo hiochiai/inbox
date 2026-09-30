@@ -1,25 +1,26 @@
-## Passing Arguments to Codex
+## Passing arguments to codex
 
-Arguments that InBox does not recognize are passed to Codex.
+Put all agent arguments after `--`. Before it, only InBox options are accepted.
 
 ```bash
-# Show Codex help and version
-inbox codex --help
-inbox codex --version
+# Agent help and version
+inbox codex -- --help
+inbox codex -- --version
 
-# Start a session with an initial prompt
-inbox codex "Explain this project"
+# Select the InBox profile, then pass options to the agent
+inbox codex -p work -n -- --help
 ```
 
-InBox handles `-p` / `--profile` itself: these select an InBox profile, not Codex's own configuration profile. InBox also consumes `-n`, `-A`, and `-D`; see `inbox --help` for these options.
+The first `--` is consumed by InBox. Everything after it is forwarded unchanged, including another `--`, empty strings, and options such as `-p`, `-n`, `-A`, or `-D`. Before the separator, these options belong to InBox. Unknown options and positional arguments before it are errors, even if the agent accepts them.
 
-### Default Arguments
+### Defaults
 
-InBox adds `--dangerously-bypass-approvals-and-sandbox` by default. Codex can run commands and modify the mounted project without approval prompts or its own sandbox.
-
-Use `-n` or `--no-defaults` to omit this argument:
+InBox adds `--dangerously-bypass-approvals-and-sandbox` by default. Use `-n` before the separator to omit it; approval behavior then depends on the agent configuration. The separator itself does not disable defaults.
 
 ```bash
-# Run Codex without InBox's default argument
 inbox codex -n
 ```
+
+### Migration from v0.14.1
+
+This source revision requires the separator for agent arguments. Replace `inbox codex --help` with `inbox codex -- --help`. The v0.14.1 release forwards unknown arguments implicitly and does not support this separator. Until a new release is published, use [source installation](../installation.md#from-a-checkout).
