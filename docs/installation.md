@@ -23,11 +23,14 @@ inbox version
 
 `inbox update` downloads the launcher from **main**, checks Bash syntax, and replaces the running script. It is not a release-pinned or cryptographically verified update; it requires curl, realpath, and write access to the installed path. To stay on releases, repeat the release installation instead.
 
-The default image is `ghcr.io/hiochiai/inbox:<launcher-version>-<agent>`. CI rebuilds these tags with upstream agent updates; a launcher version does not pin the agent or image contents. Docker can reuse a locally cached image. Pull the selected tag explicitly to refresh it:
+The default image is `ghcr.io/hiochiai/inbox:<launcher-version>-<agent>`. CI rebuilds these tags with upstream agent updates; a launcher version does not pin the agent or image contents. Docker can reuse a locally cached image. For the default Claude image, derive the tag from your installed launcher and pull it explicitly:
 
 ```bash
-docker pull ghcr.io/hiochiai/inbox:0.14.1-claude
+inbox_launcher_version=$(inbox version) &&
+  docker pull "ghcr.io/hiochiai/inbox:${inbox_launcher_version##* }-claude"
 ```
+
+Replace `claude` with your chosen agent. This refreshes the default image only; if you use `INBOX_IMAGE`, pull the image selected by that override. For a custom profile image, update its base image as needed and rebuild with `inbox profile build-image <agent> [<profile>]`.
 
 `INBOX_IMAGE` overrides image selection. A value containing `:` is used directly and overrides the profile Dockerfile; otherwise InBox appends a profile or version/agent tag. Use the matching agent image and entrypoint.
 

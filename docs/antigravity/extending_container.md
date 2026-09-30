@@ -1,12 +1,12 @@
 ## Extending the Antigravity Container
 
-You can extend the Antigravity container by creating a `Dockerfile` in your profile directory.
+You can extend the Antigravity container by creating a `Dockerfile` in your profile directory. This example consistently uses the named profile `work`.
 
 ### 1. Identify Profile Directory
 
 ```bash
-inbox profile antigravity
-# Output: /home/user/.inbox/antigravity
+inbox profile antigravity work
+# Output: /home/user/.inbox/antigravity-work
 ```
 
 ### 2. Create Dockerfile
@@ -23,16 +23,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
 ### 3. Build the Image
 
 ```bash
-inbox profile build-image antigravity
+inbox profile build-image antigravity work
 ```
 
 ### 4. Run
 
 ```bash
-inbox antigravity
+inbox antigravity -p work
 ```
 
 The container will now include the additional tools you installed.
+
+For the unnamed profile, place the Dockerfile at `$HOME/.inbox/antigravity/Dockerfile`, build with `inbox profile build-image antigravity`, and run `inbox antigravity`. `inbox profile antigravity` without a profile argument inherits any configured default profile name, so it may return a different directory.
 
 ### Keep credentials out of builds
 

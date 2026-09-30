@@ -29,12 +29,17 @@ inbox gemini
 
 ### Configure Google Cloud Project
 
-You can set your project ID for the default profile with this command:
+For the unnamed profile used by `inbox gemini`, prepare the configuration file without replacing existing content:
 
 ```bash
-mkdir -p "$(inbox profile gemini)/.gemini"
-# Merge into an existing .env instead of overwriting other entries
-cat << EOF >"$(inbox profile gemini)/.gemini/.env"
-GOOGLE_CLOUD_PROJECT=your-project-id
-EOF
+mkdir -p "$HOME/.inbox/gemini/.gemini"
+touch "$HOME/.inbox/gemini/.gemini/.env"
 ```
+
+Open that `.env` file in your editor and add or update only the following entry, preserving all other entries:
+
+```dotenv
+GOOGLE_CLOUD_PROJECT=your-project-id
+```
+
+For a named profile such as `work`, edit `$HOME/.inbox/gemini-work/.gemini/.env` instead and launch with `inbox gemini -p work`. Avoid `inbox profile gemini` when locating the unnamed profile: if a default profile name is configured, that command uses it even when the default agent is different.
