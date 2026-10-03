@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Configuration ---
-INBOX_VERSION="0.15.2"
+INBOX_VERSION="0.16.0"
 INBOX_CONFIG_DIR="${HOME}/.inbox"
 INBOX_IMAGE="${INBOX_IMAGE:-ghcr.io/hiochiai/inbox}"
 DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
@@ -61,7 +61,7 @@ function print_usage() {
 InBox runs coding agents in disposable Docker containers with persistent profiles.
 
 Usage:
-  inbox <agent> [-p <profile>] [-n] [-A] [-D <path>] [-- agent_args...]
+  inbox <agent> [-p <profile>] [-n] [-A] [--sign-in-with-chatgpt] [-D <path>] [-- agent_args...]
   inbox [command] [command_options]
 
 Agents:
@@ -74,6 +74,8 @@ Options:
   -p, --profile <name>  Use a specific profile for the agent.
   -n, --no-defaults     Do not use the default arguments for the agent.
   -A, --ssh-agent       Enable SSH Agent forwarding to the container.
+  --sign-in-with-chatgpt
+                        Start Codex ChatGPT browser login directly, then exit.
   -D, --docker-socket <path>
                         Mount Docker socket for DooD (Docker outside of Docker).
   -- <agent_args...>    Pass remaining arguments to the agent unchanged.
@@ -99,6 +101,9 @@ Examples:
 
   # Start a chat with Claude using a 'user1' profile
   inbox claude -p user1
+
+  # Sign in to ChatGPT directly for a Codex profile
+  inbox codex -p work --sign-in-with-chatgpt
 
   # Run with Docker socket mounted (DooD)
   inbox claude -D /var/run/docker.sock
@@ -153,7 +158,8 @@ function run_agent() {
     local use_default_args="$3"
     local enable_ssh_agent="$4"
     local docker_socket="$5"
-    shift 5
+    local sign_in_with_chatgpt="$6"
+    shift 6
     local agent_args=("$@")
 
     local default_args
@@ -165,14 +171,16 @@ function run_agent() {
     mkdir -p "${host_config_dir}"
 
     local final_agent_args=()
-    # Add default arguments if requested and they exist
-    if [[ "${use_default_args}" == "true" && -n "${default_args}" ]]; then
-        read -r -a final_agent_args <<< "${default_args}"
-    fi
-
-    # Append user-provided arguments
-    if [[ ${#agent_args[@]} -gt 0 ]]; then
-        final_agent_args+=("${agent_args[@]}")
+    if [[ "${sign_in_with_chatgpt}" == "true" ]]; then
+        # Dedicated login action, without interactive agent defaults.
+        final_agent_args=(login)
+    else
+        if [[ "${use_default_args}" == "true" && -n "${default_args}" ]]; then
+            read -r -a final_agent_args <<< "${default_args}"
+        fi
+        if [[ ${#agent_args[@]} -gt 0 ]]; then
+            final_agent_args+=("${agent_args[@]}")
+        fi
     fi
 
     # Determine the final Docker image name
@@ -202,6 +210,9 @@ function run_agent() {
     fi
 
     local docker_run_cmd=("docker" "run" "-it" "--rm")
+    if [[ "${sign_in_with_chatgpt}" == "true" ]]; then
+        docker_run_cmd+=("-p" "127.0.0.1:1455:61455" "-e" "INBOX_SIGN_IN_WITH_CHATGPT=1")
+    fi
     docker_run_cmd+=("-v" "${host_config_dir}:/home/inbox")
     docker_run_cmd+=("-v" "$(pwd):/workspace")
     docker_run_cmd+=("-e" "HOST_UID=$(id -u)")
@@ -358,7 +369,7 @@ function main() {
     if [[ $# -eq 0 ]]; then
         read -r default_agent default_profile < <(get_default_agent_and_profile)
         if [[ -n "${default_agent}" ]]; then
-            run_agent "${default_agent}" "${default_profile}" "true" "false" ""
+            run_agent "${default_agent}" "${default_profile}" "true" "false" "" "false"
         else
             print_usage
             exit 1
@@ -375,6 +386,7 @@ function main() {
         local use_default_args="true"
         local enable_ssh_agent="false"
         local docker_socket=""
+        local sign_in_with_chatgpt="false"
         local pass_through_args=()
         while [[ $# -gt 0 ]]; do
             case "$1" in
@@ -385,6 +397,14 @@ function main() {
                     ;;
                 -n|--no-defaults)
                     use_default_args="false"
+                    shift
+                    ;;
+                --sign-in-with-chatgpt)
+                    if [[ "${command}" != "codex" ]]; then
+                        echo "Error: --sign-in-with-chatgpt is only supported for codex." >&2
+                        exit 1
+                    fi
+                    sign_in_with_chatgpt="true"
                     shift
                     ;;
                 -A|--ssh-agent)
@@ -409,7 +429,12 @@ function main() {
             esac
         done
 
-        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" "${docker_socket}" ${pass_through_args[@]+"${pass_through_args[@]}"}
+        if [[ "${sign_in_with_chatgpt}" == "true" && ${#pass_through_args[@]} -gt 0 ]]; then
+            echo "Error: --sign-in-with-chatgpt cannot be combined with agent arguments after --." >&2
+            exit 1
+        fi
+
+        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" "${docker_socket}" "${sign_in_with_chatgpt}" ${pass_through_args[@]+"${pass_through_args[@]}"}
         return
     fi
 

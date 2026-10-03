@@ -28,5 +28,10 @@ if [[ -n "${CI:-}" ]] && command -v "${1:-}" >/dev/null 2>&1; then
 	exec gosu inbox "$@"
 fi
 
+# Start the relay and Codex together as the unprivileged user.
+if [[ "${INBOX_SIGN_IN_WITH_CHATGPT:-}" == "1" ]]; then
+	exec gosu inbox node /usr/local/lib/inbox/sign-in-with-chatgpt.cjs /usr/local/bin/codex "$@"
+fi
+
 # Execute the command as the inbox user
 exec gosu inbox /usr/local/bin/codex "$@"

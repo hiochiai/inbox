@@ -246,6 +246,8 @@ jobs:
           docker run --rm --platform "$platform" inbox-codex:test --help
           ACTUAL_VERSION=$(docker run --rm --platform "$platform" inbox-codex:test --version)
           test "$ACTUAL_VERSION" = "codex-cli $CODEX_VERSION"
+          docker run --rm --platform "$platform" -e INBOX_SIGN_IN_WITH_CHATGPT=1 inbox-codex:test --version
+          docker run --rm --platform "$platform" --entrypoint node -v "$PWD/tests:/tests:ro" inbox-codex:test /tests/codex-sign-in-with-chatgpt.cjs /usr/local/lib/inbox/sign-in-with-chatgpt.cjs
         done
 
     - name: Log in to GitHub Container Registry

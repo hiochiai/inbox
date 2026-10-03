@@ -24,6 +24,8 @@ RUN apk add --no-cache \
 # Create entrypoint script
 COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
 
+COPY sign-in-with-chatgpt.cjs /usr/local/lib/inbox/sign-in-with-chatgpt.cjs
+
 WORKDIR /workspace
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

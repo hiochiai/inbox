@@ -56,7 +56,7 @@ inbox claude -p work -n
 
 The first run downloads the image and creates `~/.inbox/claude-work`. Follow Claude's terminal login instructions, opening the displayed URL in your host browser. Credentials saved in the container home persist in this profile. Image download and provider login time vary.
 
-Prefer Codex? Use `inbox codex -p work -n` and select **Sign in with Device Code**; browser localhost callbacks are not exposed by the launcher. [Codex login guide](./docs/codex/getting_started.md).
+Prefer Codex? Use `inbox codex -p work --sign-in-with-chatgpt` to start **Sign in with ChatGPT** directly, without choosing an authentication method. The command exits after login; then run `inbox codex -p work`. An updated Codex image is required; Docker host networking is unnecessary. [Codex login guide](./docs/codex/getting_started.md).
 
 ### 3. Switch identities
 

@@ -26,8 +26,11 @@ function check_run() {
     shift 5
     local profile_dir="$agent"
     [[ -z "$profile" ]] || profile_dir="$agent-$profile"
-    local expected=(run -it --rm
-        -v "$INBOX_CONFIG_DIR/$profile_dir:/home/inbox"
+    local expected=(run -it --rm)
+    if [[ "${expect_sign_in_with_chatgpt:-false}" == true ]]; then
+        expected+=(-p 127.0.0.1:1455:61455 -e INBOX_SIGN_IN_WITH_CHATGPT=1)
+    fi
+    expected+=(-v "$INBOX_CONFIG_DIR/$profile_dir:/home/inbox"
         -v "$test_dir/project with spaces:/workspace"
         -e "HOST_UID=$(id -u)")
     if [[ "$ssh" == true ]]; then
@@ -114,6 +117,24 @@ for agent in antigravity claude codex gemini; do
     check_run "$agent" '' true false '' "$agent" -A --
     grep -q 'SSH_AUTH_SOCK is not set' "$test_dir/output"
     SSH_AUTH_SOCK="$saved_socket"
+done
+
+# Callback forwarding is opt-in and restricted to Codex.
+expect_sign_in_with_chatgpt=true
+forwarded=(login)
+check_run codex work false false '' codex -p work -n --sign-in-with-chatgpt
+forwarded=(login)
+check_run codex '' false false '' codex --sign-in-with-chatgpt
+check_run codex '' false false '' codex --sign-in-with-chatgpt --
+expect_sign_in_with_chatgpt=false
+check_error "cannot be combined" codex --sign-in-with-chatgpt -- login
+check_error "cannot be combined" codex --sign-in-with-chatgpt -- --device-auth
+check_error "cannot be combined" codex --sign-in-with-chatgpt -- ""
+check_error "Agent arguments must follow --" codex --auth-callback
+forwarded=(--sign-in-with-chatgpt)
+check_run codex '' false false '' codex -n -- --sign-in-with-chatgpt
+for agent in claude gemini antigravity; do
+    check_error 'only supported for codex' "$agent" --sign-in-with-chatgpt
 done
 
 # Management commands do not become agent arguments.
