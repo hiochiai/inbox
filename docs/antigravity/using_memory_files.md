@@ -1,41 +1,41 @@
 ## Using Memory Files with Antigravity
 
-Memory files allow you to provide persistent context to the Antigravity agent across multiple conversations.
-
-### How It Works
-
-Place a `GEMINI.md` file in your profile directory to provide persistent context. The agent is pre-configured to load this file as part of its initial context.
+Save instructions in a file so Antigravity can reuse them across sessions.
+These steps use the `work` profile.
 
 ### Setup
 
-1. **Create the memory file:**
-
-   The memory file should be placed in your profile's configuration directory. For the default profile:
+1. In your host terminal, create the instruction file if needed. Existing content is kept:
 
    ```bash
-   # Create an empty memory file
-   mkdir -p ~/.inbox/antigravity/.gemini
-   touch ~/.inbox/antigravity/.gemini/GEMINI.md
+   mkdir -p ~/.inbox/antigravity-work/.gemini
+   touch ~/.inbox/antigravity-work/.gemini/GEMINI.md
    ```
 
-   For a named profile, replace `antigravity` with `antigravity-<profile-name>`:
+2. Open that file in your editor. Add your instructions without removing existing ones:
+
+   ```markdown
+   Respond in Japanese.
+   Run the relevant tests after changing code.
+   ```
+
+3. Restart the same profile:
 
    ```bash
-   mkdir -p ~/.inbox/antigravity-myprofile/.gemini
-   touch ~/.inbox/antigravity-myprofile/.gemini/GEMINI.md
+   inbox antigravity -p work -n
    ```
-
-2. **Add your content:**
-
-   Open the file in a text editor and add any instructions or context in Markdown format.
 
 ### File Location
 
-Inside the Antigravity container, the memory file is available at:
+| Profile | File on the host |
+| --- | --- |
+| `work` | `~/.inbox/antigravity-work/.gemini/GEMINI.md` |
+| Unnamed | `~/.inbox/antigravity/.gemini/GEMINI.md` |
 
-- **Path:** `/home/inbox/.gemini/GEMINI.md`
+Inside the container, the file is at `/home/inbox/.gemini/GEMINI.md`.
+For the unnamed profile, use its path above and omit `-p work` when starting the agent.
 
-The agent automatically loads this file when starting. To disable this feature, simply delete or rename the `GEMINI.md` file.
-
+<a id="how-it-works"></a>
+The agent reads this file when starting. Rename or remove this file to stop loading these profile instructions.
 
 [Documentation index](../README.md) · [Manage profiles](../profiles.md)

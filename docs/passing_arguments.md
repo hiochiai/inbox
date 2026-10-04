@@ -1,27 +1,26 @@
 ## Pass arguments to an agent
 
-Use `--` to separate InBox options from options or prompts intended for the agent. Requires InBox v0.15.0 or newer.
+Put InBox options before `--`. Put the agent's options and prompt after it.
+These examples require InBox v0.15.0 or newer.
 
-In your **host terminal**, select the profile before the separator and put agent arguments after it:
+Run this in your host terminal to show Claude's help:
 
 ```bash
-# Request Claude help without adding InBox's approval-bypass flag
 inbox claude -p work -n -- --help
 ```
 
-Check that the output is the agent's help, rather than InBox's usage text. Replace `claude` with `codex`, `antigravity`, or `gemini` to request that agent's help.
-
-For Claude, `-p` after the separator has the agent's meaning (a non-interactive prompt):
+For a prompt, use Claude's own `-p` option after the separator:
 
 ```bash
-# Requires an authenticated Claude profile and provider access
 inbox claude -p work -n -- -p "Explain this project"
 ```
 
-The first `-p work` selects the InBox home. The second `-p` reaches Claude unchanged. The launcher still allocates a TTY; for headless jobs, use [images directly in CI](./running_in_ci.md).
+The first `-p work` selects the InBox profile. The second `-p` sends a prompt to Claude.
+The prompt requires a logged-in profile and provider access.
 
-For all accepted options, default flags, and migration details, see the [CLI reference](./cli_reference.md).
+See the [CLI reference](./cli_reference.md#launch-an-agent) for all argument rules and [migration examples](./cli_reference.md#argument-migration).
+For jobs without a terminal, use [images directly in CI](./running_in_ci.md).
 
 [Documentation index](./README.md) · [Manage profiles](./profiles.md)
 
-Arguments examples: [claude](./claude/passing_arguments.md) · [codex](./codex/passing_arguments.md) · [antigravity](./antigravity/passing_arguments.md) · [gemini](./gemini/passing_arguments.md).
+Agent examples: [Claude](./claude/passing_arguments.md), [Codex](./codex/passing_arguments.md), [Antigravity](./antigravity/passing_arguments.md), [Gemini](./gemini/passing_arguments.md).

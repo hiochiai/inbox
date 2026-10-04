@@ -1,14 +1,12 @@
-## Set claude as the default
+## Set Claude as the default
 
-Run in your **host terminal** with InBox installed.
+Choose what `inbox` starts with no arguments.
+Run this in your host terminal.
 
 ```bash
 inbox profile set-default claude work
-inbox profile default
 ```
 
-The output should show this agent and the work profile. Bare inbox launches this selection with approval-bypass defaults; explicit agent commands keep their own profile selection.
+See [Set default startup](../default_startup.md) for the full steps and approval behavior.
 
-See [Set default startup](../default_startup.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
-
-[Documentation index](../README.md) · [claude authentication](./getting_started.md)
+[Documentation index](../README.md) · [Login guide](./getting_started.md)

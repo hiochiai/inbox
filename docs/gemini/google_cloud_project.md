@@ -1,48 +1,38 @@
 ## Getting Started with GOOGLE_CLOUD_PROJECT
 
-### 1. Initial Setup
+<!-- Preserve links to login steps that now live in the login guide. -->
+<a id="1-initial-setup"></a>
+<a id="2-get-authentication-url"></a>
+<a id="3-complete-authentication"></a>
+<a id="4-start-using-gemini"></a>
 
-```bash
-inbox gemini
-```
-
-Follow the prompts: select a theme and choose "Login with Google".
-
-### 2. Get Authentication URL
-
-```bash
-inbox gemini
-```
-
-Copy the URL displayed in the terminal and open it in your browser.
-
-### 3. Complete Authentication
-
-* Log in with your Google account and grant the necessary permissions.
-* Copy the verification code shown in the browser and paste it into your terminal.
-
-### 4. Start Using Gemini
-
-```bash
-inbox gemini
-```
+Gemini is deprecated in InBox. This page is for existing users who need a Google Cloud project ID.
+For login, use the [Gemini guide](./getting_started.md).
 
 ### Configure Google Cloud Project
 
-For the unnamed profile used by `inbox gemini`, prepare the configuration file without replacing existing content:
+1. In your host terminal, prepare the `work` profile's file without replacing its content:
 
-```bash
-mkdir -p "$HOME/.inbox/gemini/.gemini"
-touch "$HOME/.inbox/gemini/.gemini/.env"
-```
+   ```bash
+   mkdir -p "$HOME/.inbox/gemini-work/.gemini"
+   touch "$HOME/.inbox/gemini-work/.gemini/.env"
+   ```
 
-Open that `.env` file in your editor and add or update only the following entry, preserving all other entries:
+2. Open `.env` in your editor. Add or update this entry, keeping other entries:
 
-```dotenv
-GOOGLE_CLOUD_PROJECT=your-project-id
-```
+   ```dotenv
+   GOOGLE_CLOUD_PROJECT=your-project-id
+   ```
 
-For a named profile such as `work`, edit `$HOME/.inbox/gemini-work/.gemini/.env` instead and launch with `inbox gemini -p work`. Avoid `inbox profile gemini` when locating the unnamed profile: if a default profile name is configured, that command uses it even when the default agent is different.
+   Replace `your-project-id` with your Google Cloud project ID.
 
+3. Start the same profile:
+
+   ```bash
+   inbox gemini -p work -n
+   ```
+
+Host environment variables are not forwarded automatically. Set the value in the profile file above.
+For the unnamed profile, replace `gemini-work` with `gemini` in the paths and omit `-p work`.
 
 [Documentation index](../README.md) · [Manage profiles](../profiles.md)

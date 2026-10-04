@@ -1,43 +1,47 @@
 ## Create and switch profiles
 
-Keep separate logins and settings by choosing an agent and a profile name. Run these commands in your **host terminal**, from the project you want the agent to work on. You need an installed launcher and a running Docker daemon.
+A profile stores one agent's login and settings. Use separate profiles for work and personal accounts.
+Run these commands in your host terminal with InBox installed and Docker running.
 
 ### Create a named profile
 
-1. Start a profile named `work`:
+1. From your project directory, start the `work` profile:
 
    ```bash
    inbox claude -p work -n
    ```
 
-   InBox creates `$HOME/.inbox/claude-work` if needed and mounts it at `/home/inbox`. Follow the [Claude login guide](./claude/getting_started.md), then exit the agent.
+   InBox creates `~/.inbox/claude-work` if needed. Follow the login prompts, then exit the agent.
+   `-n` omits the default flag that skips approvals. The agent can still edit your project.
 
-2. Confirm that the profile exists:
+2. Check the profile:
 
    ```bash
    inbox profile list
    inbox profile claude work
    ```
 
-   The list includes `claude (work)`. The second command prints a path ending in `.inbox/claude-work`.
+   Expect `claude (work)` and a path ending in `.inbox/claude-work`.
 
-Replace `claude` with another supported agent to create its own separate home. Use simple names such as `work` or `personal`.
+Replace `claude` with another supported agent to create that agent's profile.
+Use simple names such as `work` or `personal`.
 
 ### Switch or return to a profile
 
-Exit the current session before starting the next:
+Exit your current session before starting another profile:
 
 ```bash
-# Separate login and settings
 inbox claude -p personal -n
 ```
 
+To return to work, exit again and run:
+
 ```bash
-# Reuse the work profile after exiting the personal session
 inbox claude -p work -n
 ```
 
-Saved home-directory state is reused. The project is always the directory from which you launch; switching profiles does not create a separate project copy.
+Switching profiles changes the login and settings. It does not copy your project.
+The agent always works on the directory where you start InBox.
 
 ### Use the unnamed profile
 
@@ -45,20 +49,21 @@ Saved home-directory state is reused. The project is always the directory from w
 inbox claude -n
 ```
 
-This uses `$HOME/.inbox/claude`, even if you configured a default named profile. To choose what bare `inbox` launches, follow [set default startup](./default_startup.md).
+Without `-p`, Claude uses `~/.inbox/claude`. This is the **unnamed profile**.
+It does not follow the saved default. To choose what `inbox` with no arguments starts, [set default startup](./default_startup.md).
 
 ### Locate files before editing them
 
-For named profiles, always supply both names:
+Always include the agent and profile name:
 
 ```bash
 inbox profile claude work
 ```
 
-For the unnamed Claude home, use `$HOME/.inbox/claude` directly. `inbox profile claude` inherits any configured default profile name, including one configured for a different agent. Printing a path does not create the directory.
+This prints the directory without creating it. For the unnamed Claude profile, use `~/.inbox/claude` directly.
+Omitting the name from `inbox profile claude` has different behavior; see the [command reference](./cli_reference.md#manage-profiles-and-the-launcher).
 
-[Documentation index](./README.md) · [Profile and container model](./profile_model.md) · [Command reference](./cli_reference.md)
+[Documentation index](./README.md) · [What persists](./profile_model.md)
 
-Create examples: [claude](./claude/creating_profiles.md) · [codex](./codex/creating_profiles.md) · [antigravity](./antigravity/creating_profiles.md) · [gemini](./gemini/creating_profiles.md).
-
-Switch examples: [claude](./claude/switching_profiles.md) · [codex](./codex/switching_profiles.md) · [antigravity](./antigravity/switching_profiles.md) · [gemini](./gemini/switching_profiles.md).
+Agent examples: create profiles for [Claude](./claude/creating_profiles.md), [Codex](./codex/creating_profiles.md), [Antigravity](./antigravity/creating_profiles.md), or [Gemini](./gemini/creating_profiles.md).
+Switch profiles for [Claude](./claude/switching_profiles.md), [Codex](./codex/switching_profiles.md), [Antigravity](./antigravity/switching_profiles.md), or [Gemini](./gemini/switching_profiles.md).

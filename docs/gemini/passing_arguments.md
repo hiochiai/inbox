@@ -1,13 +1,14 @@
-## Pass arguments to gemini
+## Pass arguments to Gemini
 
-Run in your **host terminal** with InBox installed and Docker running.
+Gemini is deprecated in InBox. These examples are for existing users.
+
+Put agent arguments after `--`. This example shows the agent's help.
+Run this in your host terminal.
 
 ```bash
 inbox gemini -p work -n -- --help
 ```
 
-The output should be the agent’s help. The first separator is consumed by InBox; all following arguments are passed unchanged.
+See [Pass agent arguments](../passing_arguments.md) for the full steps.
 
-See [Pass agent arguments](../passing_arguments.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
-
-[Documentation index](../README.md) · [gemini authentication](./getting_started.md)
+[Documentation index](../README.md) · [Login guide](./getting_started.md)

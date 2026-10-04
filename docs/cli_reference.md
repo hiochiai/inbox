@@ -1,84 +1,134 @@
 ## InBox command reference
 
-Use this page to look up launcher syntax, defaults, paths, and image selection. Commands run in your **host terminal** unless stated otherwise.
+Look up options, defaults, paths, and image selection here.
+Run commands in your host terminal unless stated otherwise.
 
 ### Launch an agent
 
 ```text
-inbox <agent> [-p <profile>] [-n] [-A] [-D <socket>] [-- agent_args...]
+inbox <agent> [-p <profile>] [-n] [-A] [-D <socket>] [--sign-in-with-chatgpt] [-- agent_args...]
 ```
 
 Agents: `claude`, `codex`, `antigravity`, and `gemini` (deprecated in InBox).
 
 | Option | Default | Behavior |
 | --- | --- | --- |
-| `-p`, `--profile <name>` | Unnamed profile | Select the agent's persistent home |
-| `-n`, `--no-defaults` | Disabled | Omit InBox's agent approval-bypass flag |
-| `-A`, `--ssh-agent` | Disabled | Mount `SSH_AUTH_SOCK` when set; otherwise warn |
-| `-D`, `--docker-socket <path>` | No socket mount | Mount at `/var/run/docker.sock`; warn but continue if the source is not a socket |
-| `--` | No forwarded arguments | Forward all following arguments unchanged |
-
-Before `--`, unknown options and positional arguments are errors. Values must be separate, non-empty arguments that do not begin with `-`. Joined options such as `--profile=work` and combined flags such as `-nA` are unsupported. Repeated profile/socket options use the last value. The first separator is removed; subsequent separators and empty arguments are preserved.
+| `-p`, `--profile <name>` | Unnamed profile | Select a profile for this agent |
+| `-n`, `--no-defaults` | Off | Omit the default flag that skips agent approvals |
+| `-A`, `--ssh-agent` | Off | Forward `SSH_AUTH_SOCK`; warn if unset |
+| `-D`, `--docker-socket <path>` | No socket | Mount at `/var/run/docker.sock`; warn but continue if the source is not a socket |
+| `--sign-in-with-chatgpt` | Off | Codex only: sign in through a browser, then exit |
+| `--` | No agent arguments | Pass the following arguments unchanged to the agent |
 
 ```bash
-# Host terminal: select an InBox profile and request the agent's own help
+# Show Claude's help using the work profile
 inbox claude -p work -n -- --help
 ```
 
-| Agent | Flag added unless `-n` is present |
+Argument rules:
+
+- Put InBox options before `--` and agent arguments after it.
+- Unknown options and positional arguments before `--` are errors.
+- Give option values as separate, non-empty arguments. Values cannot start with `-`.
+- Joined forms such as `--profile=work` and combined flags such as `-nA` are unsupported.
+- Repeated profile or socket options use the last value.
+- InBox removes the first `--`. Later separators and empty arguments are preserved.
+- `--` alone is allowed and adds no agent arguments.
+
+| Agent | Default flag, omitted with `-n` |
 | --- | --- |
 | Claude, Antigravity | `--dangerously-skip-permissions` |
 | Codex | `--dangerously-bypass-approvals-and-sandbox` |
 | Gemini | `--yolo` |
 
-Defaults precede forwarded arguments. `-n` leaves approval and sandbox behavior to the agent's own configuration; it adds no container hardening.
+Default flags come before agent arguments. With `-n`, the agent's settings control approvals and its own sandbox.
+`-n` adds no Docker restrictions. See the [security model](./security.md).
+
+### Codex browser login
+
+```bash
+inbox codex -p work --sign-in-with-chatgpt
+```
+
+This action runs `codex login` and exits after login. It omits default approval flags, even without `-n`.
+Other agents reject this option. Extra arguments after `--` are rejected; an empty separator is allowed.
+
+The login action publishes host `127.0.0.1:1455` to container port `61455`.
+Normal sessions publish no ports. Both the launcher and Codex image must support the feature.
+See the [login guide](./codex/getting_started.md) or [implementation details](./codex/login_implementation.md).
 
 ### Manage profiles and the launcher
 
 | Command | Result |
 | --- | --- |
-| `inbox` | Launch the configured default with default flags; without a default, print usage and exit with status 1 |
-| `inbox --help` or `inbox -h` | Show launcher help |
+| `inbox` | Launch the saved default with default flags. Without a default, show usage and exit with status 1. |
+| `inbox --help` or `inbox -h` | Show InBox help |
 | `inbox version` | Print `inbox version <version>` |
-| `inbox update` | Replace the installed launcher from GitHub main after a Bash syntax check |
+| `inbox update` | Replace the installed script from GitHub main after a Bash syntax check |
 | `inbox profile --help` | Show profile commands |
-| `inbox profile list` | List existing agent profile directories |
-| `inbox profile default` | Show the configured default agent and profile |
-| `inbox profile set-default <agent> [<profile>]` | Set the default for bare `inbox`; does not create the profile home |
-| `inbox profile <agent> [<profile>]` | Print a path without creating it; omitted profile inherits the configured default profile name |
-| `inbox profile` | Print the configured default's path; fail if no default agent is set |
-| `inbox profile build-image <agent> [<profile>]` | Build using the profile home as context; omitted profile means unnamed |
+| `inbox profile list` | List existing profile directories |
+| `inbox profile default` | Show the saved default agent and profile |
+| `inbox profile set-default <agent> [<profile>]` | Save the selection for `inbox` with no arguments. Do not create the directory. |
+| `inbox profile <agent> [<profile>]` | Print a path without creating it. An omitted name uses the saved default profile name. |
+| `inbox profile` | Print the saved default's path. Fail if no default agent is set. |
+| `inbox profile build-image <agent> [<profile>]` | Build from the profile directory. An omitted name selects the unnamed profile. |
 
-**Profile omission differs by command.** `inbox claude` and `build-image claude` use the unnamed profile even after `set-default claude work`. However, `inbox profile claude` then prints the `claude-work` path. Use explicit profile names when composing commands. See [manage profiles](./profiles.md).
+**An unnamed profile and a default profile are different.**
+After `inbox profile set-default claude work`, these commands behave as follows:
+
+| Command | Selected profile |
+| --- | --- |
+| `inbox` | Claude `work` |
+| `inbox claude` | Unnamed Claude profile |
+| `inbox profile claude` | Claude `work` path |
+| `inbox profile codex` | Codex `work` path, using the saved name even for another agent |
+| `inbox profile build-image claude` | Unnamed Claude profile |
+
+Supply both agent and profile names when locating a named profile.
+Use `$HOME/.inbox/claude` directly to locate the unnamed Claude profile.
 
 ### Paths and container behavior
 
-| Host path | Container path / purpose |
+| Host path | Container path or purpose |
 | --- | --- |
 | `$HOME/.inbox/<agent>` | `/home/inbox` for an unnamed profile |
 | `$HOME/.inbox/<agent>-<profile>` | `/home/inbox` for a named profile |
-| Current working directory | `/workspace` |
-| `$HOME/.inbox/default.conf` | Default selection, read by the host launcher as shell code |
-| `<profile-home>/Dockerfile` | Custom image build definition |
+| Current directory | `/workspace` |
+| `$HOME/.inbox/default.conf` | Default selection; the launcher reads this as shell code |
+| `<profile-directory>/Dockerfile` | Custom image definition |
 
-Project and home mounts are writable. Launching creates the profile directory, uses `docker run -it --rm`, and passes `HOST_UID=$(id -u)`. It does not publish ports or automatically forward other host environment variables. The entrypoint attempts UID setup and runs the agent through `gosu inbox`. See [security boundaries](./security.md) and [CI execution](./running_in_ci.md).
+Launching creates the profile directory and runs `docker run -it --rm`.
+Both project and profile mounts are writable. InBox passes the host user's ID through `HOST_UID`.
+The entrypoint attempts to match that ID, then runs the agent through `gosu inbox`.
+
+Host environment variables are not forwarded automatically.
+`-A` forwards the SSH socket variable; direct ChatGPT login sets its own relay variable.
+Only the [Codex login action](#codex-browser-login) publishes a port.
+For execution without a terminal, see [CI usage](./running_in_ci.md).
 
 ### Image selection
 
-The default repository is `ghcr.io/hiochiai/inbox`; `INBOX_IMAGE` overrides it.
+The default repository is `ghcr.io/hiochiai/inbox`. `INBOX_IMAGE` overrides it.
 
 | Priority | Condition | Selected image |
 | --- | --- | --- |
-| 1 | `INBOX_IMAGE` contains `:` | Use its full value directly, including ahead of a profile Dockerfile |
-| 2 | Profile Dockerfile exists | `<repository>:<agent>[-<profile>]`; fail if that image is not built locally |
+| 1 | `INBOX_IMAGE` contains `:` | Use the full value, even if a profile Dockerfile exists |
+| 2 | Profile Dockerfile exists | `<repository>:<agent>[-<profile>]`; fail if it is not built locally |
 | 3 | Otherwise | `<repository>:<launcher-version>-<agent>` |
 
-The colon check is literal: a registry port also triggers priority 1. For `build-image`, the launcher always appends `:<agent>[-<profile>]`; use an untagged repository without a port or unset `INBOX_IMAGE` when following the standard build guide.
+The colon check also matches registry ports.
+For `build-image`, InBox always appends `:<agent>[-<profile>]`.
+Use a repository without a tag or port, or unset `INBOX_IMAGE` before building.
 
 Docker may reuse cached images. See [image updates](./installation.md#updates-and-image-versions).
 
 ### Argument migration
 
-InBox v0.15.0 introduced the required separator. With v0.15.0 or newer, replace `inbox claude --help` with `inbox claude -- --help`. v0.14.1 used implicit forwarding and did not support this separator.
+InBox v0.15.0 requires `--` before agent arguments. v0.14.1 used implicit forwarding and did not support this separator.
+
+| Old command | v0.15.0 or newer |
+| --- | --- |
+| `inbox claude --help` | `inbox claude -- --help` |
+| `inbox codex "Explain this project"` | `inbox codex -- "Explain this project"` |
 
 [Documentation index](./README.md) · [Pass agent arguments](./passing_arguments.md)

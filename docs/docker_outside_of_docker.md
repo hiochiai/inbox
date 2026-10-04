@@ -1,52 +1,46 @@
 ## Docker outside of Docker (DooD)
 
-InBox containers can access the host's Docker daemon by mounting the Docker socket. This is known as **Docker outside of Docker (DooD)** and allows AI agents running inside the container to build images, run containers, and use other Docker commands.
-
-### How It Works
-
-When the `-D` (or `--docker-socket`) option is specified, InBox mounts the host's Docker socket into the container. The container image includes the Docker CLI, and the entrypoint script attempts to add the agent user to the socket’s group. The group must exist inside the image; rootless Docker and Docker Desktop setups may require additional configuration.
+Let an agent build images and run containers through your host's Docker service.
+This gives the agent broad control over Docker on the host.
 
 ### Usage
 
+From your project directory, run:
+
 ```bash
-# Run Claude with Docker socket access
-inbox claude -D /var/run/docker.sock
-
-# Run Gemini with Docker socket access
-inbox gemini -D /var/run/docker.sock
-
-# Combine with other options
-inbox claude -p work -D /var/run/docker.sock
+inbox claude -p work -n -D /var/run/docker.sock
 ```
 
-The `-D` option requires the path to the Docker socket on the host. The most common path is `/var/run/docker.sock`.
-
-If the option is omitted, Docker socket mounting is disabled and the container runs without access to the host's Docker daemon.
+Replace the socket path if your Docker installation uses a different one.
+Without `-D`, InBox does not connect the host Docker socket.
 
 ### Verifying Docker Access
 
-Once inside the container, you can verify that Docker is accessible by asking the agent to run:
+Ask the agent to run:
 
 ```bash
 docker ps
 ```
 
-If configured correctly, this will show the running containers on the host.
+Expect a list of running containers on the host. If access fails, check the socket path and permissions.
+
+### How It Works
+
+The image includes the Docker CLI. `-D` mounts the host socket at `/var/run/docker.sock` inside the container.
+The entrypoint tries to add the agent user to the socket's group. That group must exist in the image.
+Rootless Docker and Docker Desktop may need extra configuration.
 
 ### Calling another coding agent
 
-The same socket lets an agent launch another InBox image on the host daemon. Claude can invoke Codex non-interactively, give it a separate profile and a read-only project mount, and use its output as a second opinion. The containers are siblings; their homes, images, and arguments are chosen independently.
-
-Follow the [Claude → Codex recipe](../examples/agent-handoff/README.md). It explains host-path mapping, authentication, non-interactive invocation, and what was verified. The images do not include the InBox launcher, so this is an explicit Docker command rather than recursive `inbox` execution.
+An agent with Docker access can start another InBox image and read its output.
+See [Ask Codex from Claude](../examples/agent-handoff/README.md) for the commands and host paths.
 
 ### Security Considerations
 
-Mounting the Docker socket gives the container **full control over the host's Docker daemon**. This means the agent can:
+Socket access lets an agent create and stop containers, mount host files, and access Docker volumes and networks.
+With a Docker daemon running as root, this can give the agent root access to the host.
 
-- Start and stop any container on the host
-- Pull and build images
-- Access volumes and networks
-
-Only use this option when you trust the agent's actions and understand the implications. The `--no-defaults` (`-n`) flag can be used alongside `-D` to disable the agent's autonomous mode, leaving approval behavior to the agent configuration. It does not restrict daemon access. With a rootful daemon, creating containers with host mounts can grant host root control. See the [security model](./security.md).
+`-n` only changes approval defaults. It does not restrict Docker access.
+See the [security model](./security.md#optional-host-connections).
 
 [Documentation index](./README.md) · [CLI reference](./cli_reference.md)

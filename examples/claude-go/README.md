@@ -1,19 +1,35 @@
 ## A Claude profile with Go tools
 
-From this repository checkout, prepare a dedicated profile without launching the agent:
+Build a dedicated `go` profile from the example files in this repository.
+Run the commands in your host terminal with Docker running.
 
-```bash
-mkdir -p "$HOME/.inbox/claude-go"
-cp examples/claude-go/Dockerfile examples/claude-go/.dockerignore "$HOME/.inbox/claude-go/"
-inbox profile build-image claude go
-```
+1. From the repository root, copy the example into a new profile directory:
 
-Then change to your Go project and run:
+   ```bash
+   # Stop if the destination already exists, so existing files are kept
+   mkdir -p "$HOME/.inbox" &&
+     mkdir "$HOME/.inbox/claude-go" &&
+     cp examples/claude-go/Dockerfile examples/claude-go/.dockerignore "$HOME/.inbox/claude-go/"
+   ```
 
-```bash
-inbox claude -p go -n
-```
+   If the profile exists, compare and edit its files instead of replacing them.
 
-Authenticate on first use. Ask the agent to run `go version` and `rg --version`. Exit and start the same profile again: tools come from the custom image, while home-directory credentials and state come from the profile.
+2. Build the image:
 
-Rebuild after changing the Dockerfile. The base tag can change; use an image digest in `FROM` when you need reproducibility. An explicitly tagged `INBOX_IMAGE` takes precedence over this custom image. Keep `.dockerignore`: the profile is the Docker build context and may contain credentials.
+   ```bash
+   unset INBOX_IMAGE
+   inbox profile build-image claude go
+   ```
+
+3. Change to your Go project and start the profile:
+
+   ```bash
+   inbox claude -p go -n
+   ```
+
+   Sign in if needed. Ask the agent to run `go version` and `rg --version`.
+   Both commands should print version information.
+
+The tools remain available on later runs. Rebuild after changing the Dockerfile.
+Keep `.dockerignore` to exclude profile credentials from the build.
+See [custom images](../../docs/custom_images.md) for updates and image overrides.

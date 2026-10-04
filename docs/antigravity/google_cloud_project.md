@@ -1,15 +1,23 @@
 ## Google Cloud project configuration
 
-InBox does **not** automatically forward host environment variables. Prefixing `inbox antigravity` with `GOOGLE_CLOUD_PROJECT=...` does not set that variable inside the container.
+If your Antigravity version needs `GOOGLE_CLOUD_PROJECT`, set it in a custom image.
+Whether the agent uses it depends on its version and login method.
 
-If your installed agent version needs this variable, set it in a [custom profile image](./extending_container.md):
+Follow [Build a custom image](../custom_images.md) with agent `antigravity` and profile `work`.
+Use this Dockerfile, replacing `your-project-id` with your project ID:
 
 ```dockerfile
-FROM ghcr.io/hiochiai/inbox:0.14.1-antigravity
+FROM ghcr.io/hiochiai/inbox:latest-antigravity
 ENV GOOGLE_CLOUD_PROJECT=your-project-id
 ```
 
-Build with `inbox profile build-image antigravity work`, then run `inbox antigravity -p work`. Whether this variable is used depends on the agent version and authentication mode. Do not bake credentials into the image.
+After building, start the profile:
 
+```bash
+inbox antigravity -p work -n
+```
 
-[Documentation index](../README.md) · [Manage profiles](../profiles.md)
+InBox does not forward host environment variables automatically.
+Do not put credentials in the Dockerfile.
+
+[Documentation index](../README.md) · [Login guide](./getting_started.md)

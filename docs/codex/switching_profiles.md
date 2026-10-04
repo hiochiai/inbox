@@ -1,13 +1,12 @@
-## Switch codex profiles
+## Switch Codex profiles
 
-Run in your **host terminal** with InBox installed and Docker running.
+Exit your current session, then return to the `work` profile.
+Run this in your host terminal.
 
 ```bash
 inbox codex -p work -n
 ```
 
-Exit the current agent session first. This selects the work home without changing the default used by bare inbox.
+See [Create and switch profiles](../profiles.md#switch-or-return-to-a-profile) for the full steps.
 
-See [Create and switch profiles](../profiles.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
-
-[Documentation index](../README.md) · [codex authentication](./getting_started.md)
+[Documentation index](../README.md) · [Login guide](./getting_started.md)

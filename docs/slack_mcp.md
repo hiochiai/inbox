@@ -1,17 +1,28 @@
 ## Configuring MCP services
 
-InBox runs agent-configured MCP tools inside the selected agent container. It does not install a Slack MCP server or manage external service credentials.
+MCP servers give agents tools for services such as Slack.
+InBox does not install a Slack server or manage its credentials.
 
-Use the installed agent's MCP help and the chosen server's own setup documentation. For example:
+1. Check the agent's MCP setup commands from your host terminal:
 
-```bash
-inbox claude -p work -n -- mcp --help
-```
+   ```bash
+   inbox claude -p work -n -- mcp --help
+   ```
 
-Configure the server in that profile, and install any required runtime using a [custom image](./claude/extending_container.md). The Antigravity image is Debian-based and does not currently install Node.js or npx; examples requiring npx need those dependencies added first.
+2. Follow your chosen server's setup guide. Save its configuration in the same `work` profile.
+   Add required runtimes through a [custom image](./custom_images.md).
 
-Prefixing an InBox command with `SLACK_BOT_TOKEN=...` does not forward that variable into the container. Use the agent/server's supported configuration within the profile. Avoid putting secrets in shell history, shared examples, Dockerfiles, or image build contexts.
+3. Restart the profile and check that the agent lists the configured tools:
 
-MCP tools can act on the external services for which you grant credentials, as well as access the mounted project and profile. Review requested permissions and the server implementation. See [security boundaries](./security.md).
+   ```bash
+   inbox claude -p work -n
+   ```
+
+InBox does not forward host environment variables automatically.
+For tokens, use the agent or server's configuration in the profile.
+Keep secrets out of shell history, Dockerfiles, and shared examples.
+
+The Antigravity image does not include Node.js or `npx`. Add them before using a server that needs them.
+MCP tools can access configured services and mounted files; see the [security model](./security.md).
 
 [Documentation index](./README.md) · [CLI reference](./cli_reference.md)

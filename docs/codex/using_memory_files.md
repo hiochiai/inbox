@@ -1,33 +1,48 @@
 ## Using Memory Files with Codex
 
-Use `AGENTS.md` to provide instructions that Codex reads at the start of each session.
+Save instructions in a file so Codex can reuse them across sessions.
+These steps use the `work` profile.
 
-### Profile Instructions
+<a id="profile-instructions"></a>
+### Setup
 
-1. Create the file for your default InBox profile:
+1. In your host terminal, create the instruction file if needed. Existing content is kept:
 
    ```bash
-   # Create the directory and instruction file without replacing existing content
-   mkdir -p ~/.inbox/codex/.codex
-   touch ~/.inbox/codex/.codex/AGENTS.md
+   mkdir -p ~/.inbox/codex-work/.codex
+   touch ~/.inbox/codex-work/.codex/AGENTS.md
    ```
 
-2. Edit the file and add your preferences, for example:
+2. Open that file in your editor. Add your instructions without removing existing ones:
 
    ```markdown
    Respond in Japanese.
    Run the relevant tests after changing code.
    ```
 
-For a named profile such as `personal`, use `~/.inbox/codex-personal/.codex/AGENTS.md`. Inside the container, either profile's file appears at `/home/inbox/.codex/AGENTS.md`.
+3. Restart the same profile:
+
+   ```bash
+   inbox codex -p work -n
+   ```
+
+### File Location
+
+| Profile | File on the host |
+| --- | --- |
+| `work` | `~/.inbox/codex-work/.codex/AGENTS.md` |
+| Unnamed | `~/.inbox/codex/.codex/AGENTS.md` |
+
+Inside the container, the file is at `/home/inbox/.codex/AGENTS.md`.
+For the unnamed profile, use its path above and omit `-p work` when starting the agent.
 
 ### Project Instructions
 
-Place an `AGENTS.md` in your project directory for shared project instructions. Start `inbox codex` from that directory so it is mounted at `/workspace`.
+Put an `AGENTS.md` in your project for shared project instructions.
+Start InBox from that directory so the agent can read it at `/workspace`.
 
-Codex combines profile and project instructions; more specific project guidance takes precedence. An `AGENTS.override.md` in the same directory takes priority over `AGENTS.md`. Restart Codex after editing instructions.
-
-See the [official AGENTS.md guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md) for instruction discovery details.
-
+Codex combines profile and project instructions. More specific project guidance takes precedence.
+In the same directory, `AGENTS.override.md` takes priority over `AGENTS.md`.
+See the [AGENTS.md guide](https://learn.chatgpt.com/docs/agent-configuration/agents-md) for discovery details.
 
 [Documentation index](../README.md) · [Manage profiles](../profiles.md)

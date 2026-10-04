@@ -1,29 +1,31 @@
 ## Build a custom profile image
 
-Install repeatable tools in an image so they remain available across sessions. You need a running Docker daemon and InBox. Run these steps in your **host terminal**; no agent login is needed to build.
+Add tools to an image so they remain available across sessions.
+Run these steps in your host terminal with InBox installed and Docker running. No agent login is needed to build.
 
 ### Prepare and build
 
-1. Choose an agent and named profile. This example uses Claude and `tools`:
+1. Choose an agent and profile. This example uses Claude and `work`:
 
    ```bash
    inbox_agent=claude
-   inbox_profile=tools
+   inbox_profile=work
    inbox_profile_dir=$(inbox profile "$inbox_agent" "$inbox_profile")
    mkdir -p "$inbox_profile_dir"
    printf '%s\n' "$inbox_profile_dir"
    ```
 
-2. Create `Dockerfile` in the printed profile directory. For Claude:
+2. Open `Dockerfile` in that directory. Add these lines, or edit an existing Dockerfile to keep your other tools:
 
    ```dockerfile
    FROM ghcr.io/hiochiai/inbox:latest-claude
    RUN apk add --no-cache go ripgrep
    ```
 
-   Other bases and package managers: [Codex](./codex/extending_container.md), [Antigravity](./antigravity/extending_container.md), [Gemini](./gemini/extending_container.md). Retain the base image's entrypoint.
+   Other agents: [Codex](./codex/extending_container.md), [Antigravity](./antigravity/extending_container.md), [Gemini](./gemini/extending_container.md).
+   Keep the base image's entrypoint.
 
-3. Before building, create or edit `.dockerignore` in the same directory:
+3. Create or edit `.dockerignore` in the same directory before building:
 
    ```text
    **
@@ -31,38 +33,52 @@ Install repeatable tools in an image so they remain available across sessions. Y
    !.dockerignore
    ```
 
-   The entire profile home is the build context and may contain credentials. This example sends only the Dockerfile and ignore file. Explicitly allow any other required build inputs; never copy credentials into the image.
+   Docker uses the profile directory as its build context. That directory may contain credentials.
+   This example excludes everything except the two build files. Allow other files only when the build needs them.
+   Never copy credentials into an image.
 
-4. Build the image using the same agent and profile:
+4. Build using the same agent and profile:
 
    ```bash
-   # Use the standard repository for this example
+   # Use the standard image repository
    unset INBOX_IMAGE
    inbox profile build-image "$inbox_agent" "$inbox_profile"
    ```
 
-   Expect `Build successful.` and a tag ending in `:claude-tools` for the example values.
+   Expect `Build successful.`. For this example, the image tag ends in `:claude-work`.
 
 ### Check the tools and launch
 
-Check the tools without an agent login or profile mount:
+Check the tools without mounting your profile:
 
 ```bash
-# CI enables the image entrypoint's shell-command path
-docker run --rm -e CI=true ghcr.io/hiochiai/inbox:claude-tools \
+# CI lets the entrypoint run a shell command
+docker run --rm -e CI=true "ghcr.io/hiochiai/inbox:${inbox_agent}-${inbox_profile}" \
   sh -c 'go version && rg --version'
 ```
 
-Both commands should print version information. For another agent or profile, change the image tag and tool checks accordingly.
+Both tools should print their versions. For another Dockerfile, replace the checks with its installed tools.
+For the Antigravity example, use `python3 --version && pip3 --version`.
 
-Then change to your project directory and launch:
+From your project directory, start the profile:
 
 ```bash
-inbox claude -p tools -n
+inbox "$inbox_agent" -p "$inbox_profile" -n
 ```
 
-The launcher prints `Using custom image for profile`. Authenticate if this home has not been used before. Tools come from the image; credentials and settings remain in the mounted home.
+Expect `Using custom image for profile`. Sign in if this profile has no saved login.
+The image supplies tools; the profile saves your login and settings.
 
-Rebuild after editing the Dockerfile. A tagged `INBOX_IMAGE` overrides the custom image; see [image selection](./cli_reference.md#image-selection). Mutable base tags may be cached: pull the base explicitly before rebuilding to refresh it, or use a digest in `FROM` for reproducible builds.
+### Rebuild
 
-[Documentation index](./README.md) · [Complete Go example](../examples/claude-go/README.md) · [Profile model](./profile_model.md)
+Rebuild after editing the Dockerfile:
+
+```bash
+inbox profile build-image "$inbox_agent" "$inbox_profile"
+```
+
+To refresh a cached base image, pull the image in your `FROM` line before rebuilding.
+Use an image digest in `FROM` when you need the same base contents every time.
+A tagged `INBOX_IMAGE` can override your custom image; see [image selection](./cli_reference.md#image-selection).
+
+[Documentation index](./README.md) · [Complete Go example](../examples/claude-go/README.md) · [What persists](./profile_model.md)

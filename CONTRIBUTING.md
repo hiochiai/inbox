@@ -1,6 +1,7 @@
 # Contributing to InBox
 
-Keep the launch path small enough to read. Include the user problem, an example command, and how you checked the change. Propose new runtime/security layers before implementing them.
+Describe the user problem, give an example command, and explain how you checked the change.
+Keep the launcher small. Discuss new runtime or security layers before implementing them.
 
 ## Local checks
 
@@ -9,36 +10,66 @@ bash -n inbox
 bash tests/inbox_arguments.sh
 ```
 
-The regression test uses a fake Docker function and temporary profiles; it requires no daemon, credentials, or network. Test container changes separately with Docker. Never use a personal authenticated profile for automated tests.
+The regression test uses fake Docker calls and temporary profiles. It needs no daemon, credentials, or network.
+Test container changes separately with Docker. Never use personal credentials in automated tests.
 
 ## Architecture and adding an agent
 
-There is no plugin interface. The small explicit integration consists of:
+There is no plugin interface. Add an agent through these files:
 
-1. `boxes/<agent>/Dockerfile`: install the CLI and runtime tools; set `/workspace` as working directory; retain `/home/inbox` as the persistent home.
-2. `boxes/<agent>/entrypoint.sh`: perform root-side setup, then `exec gosu inbox <agent-binary> "$@"`. Preserve the CI shell path if supported. Review UID and socket handling for the base distribution.
-3. `inbox`: add the name/default arguments to `get_agent_details`, validation/help, and the profile-list filter. Defaults affecting approvals must be documented and reviewed.
-4. `tests/inbox_arguments.sh`: add the agent to the forwarding cases. Check arguments with spaces, empty strings, metacharacters, separator conflicts, profile mounts, and default flags.
-5. `.github/workflows/build.yml`: build and smoke-test both amd64/arm64, publish the matching version/agent tags, and include the build in release dependencies. Check authentication manually without recording secrets.
-6. `docs/<agent>/`: document login inside a container, persistent file locations, arguments, and custom image requirements. Add links to `docs/README.md`, the README agent table, and default-flag documentation.
+| File | Change |
+| --- | --- |
+| `boxes/<agent>/Dockerfile` | Install the CLI and tools. Keep `/workspace` and the `/home/inbox` home directory. |
+| `boxes/<agent>/entrypoint.sh` | Set up the user, then run `exec gosu inbox <agent-binary> "$@"`. Keep the CI command path if supported. |
+| `inbox` | Add the agent to `get_agent_details`, validation, help, and the profile-list filter. |
+| `tests/inbox_arguments.sh` | Cover arguments, profile mounts, default flags, and errors. |
+| `.github/workflows/build.yml` | Build and smoke-test amd64 and arm64. Publish matching tags and update release dependencies. |
+| `docs/<agent>/` | Describe login, instruction files, settings, and image differences. Link common tasks instead of copying them. |
 
-The launcher supplies `HOST_UID`, not arbitrary host environment variables. It mounts a profile at `/home/inbox` and the current directory at `/workspace`, both writable, and always allocates a TTY. An explicitly tagged `INBOX_IMAGE` wins over a profile Dockerfile. Test those contracts when adding an image.
+Check arguments with spaces, empty values, shell characters, and separators.
+Review user-ID and socket handling for the image's distribution.
+Document any defaults that affect approvals.
 
-Example image smoke test (no credentials):
+The launcher mounts the profile and project as writable directories and requires a terminal.
+It passes `HOST_UID`, not arbitrary host variables. See the [CLI reference](./docs/cli_reference.md) for the full behavior.
+
+Build and check an image without credentials:
 
 ```bash
 docker build -t inbox-claude:contributor boxes/claude
 docker run --rm inbox-claude:contributor --help
 ```
 
-Run on each supported architecture before claiming compatibility. The existing CI runs image CLI smoke tests on both architectures; it does not prove browser login or host integration compatibility on macOS/WSL2.
+Check each supported architecture. CLI smoke tests do not prove browser login or host integration support.
+Test authentication manually without recording secrets.
+For the Codex callback relay, see [login implementation](./docs/codex/login_implementation.md).
+
+## Documentation
+
+Write short sentences with one point each. Aim for 10–20 words when practical.
+Keep main topics to a few sentences and one command example. Put exceptions and internal details in reference pages.
+
+Use `work` for the usual profile example. Use other names only when the task needs a separate profile.
+Call a profile without a name the **unnamed profile**. Use **default** for the saved startup selection.
+
+Preserve existing links when moving content. Keep important access warnings near the relevant commands.
+Follow the repository's [documentation guidelines](./CLAUDE.md).
 
 ## Releases
 
-The launcher version is in `inbox`. The workflow publishes a script asset on `v*` tags after launcher tests and image jobs succeed. Maintainers should keep the tag and script version equal, and describe user-visible changes and migration requirements in release notes. Daily image rebuilds can move version/agent tags; these are not immutable dependency locks.
+Keep the version in `inbox` equal to the release tag.
+The workflow publishes the script on `v*` tags after launcher tests and image jobs pass.
+Describe user-visible changes and migration steps in release notes.
 
-Version v0.15.0 introduces the breaking requirement to put all agent arguments after `--` and adds missing-option-value diagnostics. Release notes should include migration examples; v0.14.1 does not support the separator.
+Daily image rebuilds can change versioned tags. They do not lock dependency versions.
+See [argument migration](./docs/cli_reference.md#argument-migration) for the v0.15.0 separator change.
 
 ## Issues
 
-Include host OS/architecture, Docker version/context, `inbox version`, agent/image tag, a minimal command, and expected versus actual behavior. Redact tokens, home paths if private, and project details. Do not attach profile directories or authentication files. For a suspected vulnerability, use GitHub's private reporting option if the repository exposes it; otherwise request a private contact without publishing exploit details or secrets.
+Include the host OS and architecture, Docker context, InBox version, agent image, and a minimal command.
+Use the [bug report template](./.github/ISSUE_TEMPLATE/bug_report.md).
+Describe expected and actual behavior. Remove credentials and private project details from output.
+Do not attach profile directories or login files.
+
+For suspected vulnerabilities, use GitHub private reporting if available.
+Otherwise, request a private contact without posting secrets or exploit details.

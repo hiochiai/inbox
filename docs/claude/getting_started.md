@@ -1,16 +1,16 @@
 ## Quick Start for Claude
 
-Run from a project directory you are comfortable letting Claude edit:
+Install [InBox](../installation.md) and start Docker.
+Run this in your host terminal, from your project directory:
 
 ```bash
 inbox claude -p work -n
 ```
 
-Follow the CLI login instructions. Open the displayed URL in your host browser and enter a verification code if requested. Authentication saved in the container home persists under `~/.inbox/claude-work`.
+Follow the login prompts. Open the displayed URL in your browser and enter a code if requested.
+Your login and settings are saved in `~/.inbox/claude-work`.
 
-Exit and run the same command to reuse it. Use `-p personal` for a separate login and settings.
+Exit and run the same command to return to this profile.
+`-n` omits InBox's default flag that skips approvals; your project remains writable.
 
-InBox normally adds `--dangerously-skip-permissions`; `-n` omits it. Bypass mode is not required by Docker. See the [security model](../security.md).
-
-
-[Documentation index](../README.md) · [Manage profiles](../profiles.md)
+[Documentation index](../README.md) · [Manage profiles](../profiles.md) · [Security model](../security.md)

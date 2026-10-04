@@ -45,6 +45,13 @@ This section outlines the guidelines for maintaining the quality and consistency
 
 - **Tone:** Use a concise and direct tone. Minimize jargon.
 - **Perspective:** Write from the user's point of view, explaining what they can do and why it's useful.
+- **Short sentences:** Express one point per sentence. Aim for 10–20 words when practical.
+- **Main topics:** Use one to three short sentences and one representative command. Link to reference pages for exceptions and implementation details.
+- **Shared procedures:** Keep installation and common tasks in one canonical page. Agent pages should explain only differences or link to the shared steps.
+- **Examples:** Use `work` as the usual profile name. Use another name when the task needs a separate profile, such as switching accounts.
+- **Terms:** Use **unnamed profile** when no profile name is supplied. Reserve **default** for the saved startup selection. Prefer `inbox with no arguments` over `bare inbox`.
+- **Existing settings:** Create files without truncating them. Tell readers to edit or merge settings rather than overwrite their files.
+- **Essential warnings:** Keep file access and approval behavior near the relevant commands. Put deeper security details in the security model.
 
 ---
 

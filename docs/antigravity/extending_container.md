@@ -1,6 +1,7 @@
-## Add tools to the antigravity image
+## Add tools to the Antigravity image
 
-Follow [build a custom profile image](../custom_images.md), setting `inbox_agent=antigravity` and choosing a named profile. Create the Dockerfile below in that profile home.
+Follow [Build a custom profile image](../custom_images.md) with agent `antigravity` and profile `work`.
+Use this Dockerfile in the profile directory:
 
 ```dockerfile
 FROM ghcr.io/hiochiai/inbox:latest-antigravity
@@ -8,21 +9,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends python3 python3
     && rm -rf /var/lib/apt/lists/*
 ```
 
-This image uses Debian and apt-get. Preserve the base entrypoint. Create the restrictive `.dockerignore` from the common guide **before** building.
+Antigravity's image uses Debian and `apt-get`.
+Keep the base image's entrypoint. Add the common guide's `.dockerignore` before building to exclude credentials.
 
-For the common guide's `tools` profile, check the result from your **host terminal**:
+After building, check `python3 --version` and `pip3 --version` using the common guide's verification step.
 
-```bash
-docker run --rm -e CI=true ghcr.io/hiochiai/inbox:antigravity-tools \
-  sh -c 'python3 --version && pip3 --version'
-```
-
-Expect version information for both tools. Then launch from your project directory:
-
-```bash
-inbox antigravity -p tools -n
-```
-
-The launcher should report that it is using the custom image. Authentication and agent operation require provider access.
-
-[Documentation index](../README.md) · [Build and rebuild procedure](../custom_images.md)
+[Documentation index](../README.md) · [Build and check the image](../custom_images.md)

@@ -1,45 +1,43 @@
 ## Using Memory Files with Gemini
 
-Memory files allow you to provide persistent context to the Gemini agent across multiple conversations.
+Gemini is deprecated in InBox. This guide is for existing users.
 
-### How It Works
-
-Place a `GEMINI.md` file in your profile directory to provide persistent context. The agent is pre-configured to load this file as part of its initial context.
+Save instructions in a file so Gemini can reuse them across sessions.
+These steps use the `work` profile.
 
 ### Setup
 
-1. **Create the memory file:**
-
-   The memory file should be placed in your profile's configuration directory. For the default profile:
+1. In your host terminal, create the instruction file if needed. Existing content is kept:
 
    ```bash
-   # Create an empty memory file
-   mkdir -p ~/.inbox/gemini/.gemini
-   touch ~/.inbox/gemini/.gemini/GEMINI.md
+   mkdir -p ~/.inbox/gemini-work/.gemini
+   touch ~/.inbox/gemini-work/.gemini/GEMINI.md
    ```
 
-   For a named profile, replace `gemini` with `gemini-<profile-name>`:
+2. Open that file in your editor. Add your instructions without removing existing ones:
 
-   ```bash
-   mkdir -p ~/.inbox/gemini-myprofile/.gemini
-   touch ~/.inbox/gemini-myprofile/.gemini/GEMINI.md
+   ```markdown
+   Respond in Japanese.
+   Run the relevant tests after changing code.
    ```
 
-2. **Add your content:**
-
-   Open the file in a text editor and add any instructions or context in Markdown format.
+3. Restart the same profile:
 
    ```bash
-   # Example: Add content to the file
-   echo "You are a helpful assistant that always responds in Japanese." > ~/.inbox/gemini/.gemini/GEMINI.md
+   inbox gemini -p work -n
    ```
 
 ### File Location
 
-Inside the Gemini container, the memory file is available at:
+| Profile | File on the host |
+| --- | --- |
+| `work` | `~/.inbox/gemini-work/.gemini/GEMINI.md` |
+| Unnamed | `~/.inbox/gemini/.gemini/GEMINI.md` |
 
-- **Path:** `/home/inbox/.gemini/GEMINI.md`
+Inside the container, the file is at `/home/inbox/.gemini/GEMINI.md`.
+For the unnamed profile, use its path above and omit `-p work` when starting the agent.
 
-The agent automatically loads this file when starting, so you don't need to enable any settings. To disable this feature, simply delete or rename the `GEMINI.md` file.
+<a id="how-it-works"></a>
+The agent reads this file when starting. Rename or remove this file to stop loading these profile instructions.
 
 [Documentation index](../README.md) · [Manage profiles](../profiles.md)

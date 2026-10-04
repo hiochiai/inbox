@@ -1,47 +1,50 @@
 ## Running in CI (GitLab Runner)
 
-You can run InBox agents headlessly from a CI system such as GitLab CI. In CI, the runner itself creates the container, taking over the role of the `inbox` launcher script. This page explains how the pieces map and how to set it up.
-
-### How it works
-
-The container entrypoint normally forces the agent binary to run. When the `CI` environment variable is set (GitLab Runner sets `CI=true` automatically) and the first argument is an executable command, the entrypoint instead runs that command as the `inbox` user after completing its root-side setup (UID remapping, sudoers, Docker socket permissions). This lets the CI job shell run inside the container, so your job script can invoke the agent itself.
-
-Everything the `inbox` launcher script passes to `docker run` must be provided by the runner instead:
-
-| `inbox` launcher | CI equivalent |
-| :--- | :--- |
-| `-v ~/.inbox/<profile>:/home/inbox` | Volume mount in the runner configuration |
-| `-e HOST_UID=$(id -u)` | `HOST_UID` CI variable (set it to the UID owning the mounted profile) |
-| Default agent arguments (e.g. `--dangerously-skip-permissions`) | Pass explicitly in the job script |
-| Image selection | `image:` keyword in the job definition |
+Use InBox images directly in CI. The `inbox` launcher requires an interactive terminal.
+This example runs Claude in GitLab CI with a saved `work` profile.
 
 ### GitLab Runner setup
 
-1. Prepare an authenticated profile on the runner host by running the agent interactively once (see Getting Started). The credentials persist in `~/.inbox/<profile>/`.
+1. On the runner host, [sign in to Claude](./claude/getting_started.md) with profile `work`, then exit.
+   Note that user's ID with `id -u`.
 
-2. Register a docker-executor runner and mount the profile into `/home/inbox`. In the runner's `config.toml`:
+2. Configure a Docker executor runner. In its `config.toml`, mount that user's profile:
 
    ```toml
    [runners.docker]
-     volumes = ["/home/<runner-user>/.inbox/claude:/home/inbox"]
+     volumes = ["/home/<runner-user>/.inbox/claude-work:/home/inbox"]
      pull_policy = "always"
    ```
 
+   Replace `<runner-user>` with the actual host user. Use a dedicated CI account and profile.
+   Jobs using this mount can read its credentials.
+
 ### Job definition example
+
+Add this job to `.gitlab-ci.yml`. Replace `1000` with the profile owner's user ID:
 
 ```yaml
 ai-run:
   image: ghcr.io/hiochiai/inbox:latest-claude
   variables:
-    # Must match the UID of the user owning the mounted profile on the host
     HOST_UID: "1000"
   script:
-    - claude -p "your prompt" --dangerously-skip-permissions
+    - claude -p "Explain this project" --dangerously-skip-permissions
 ```
 
-Notes:
+Keep the image's entrypoint. The job runs as `inbox` with `HOME=/home/inbox`.
+This example explicitly skips agent approval prompts. Provider access and usage charges still apply.
 
-- Do not override the image `entrypoint` in the job definition. The entrypoint must run so the container is set up before the job script executes.
-- The job script runs as the `inbox` user with `HOME=/home/inbox`, so the agent finds its profile exactly as in interactive use.
+### How it works
+
+GitLab sets `CI=true`. When `CI` is set and the first argument is an executable command, the entrypoint runs that command.
+It first sets up the user ID and permissions. This lets the runner start its job shell.
+
+| Interactive launcher behavior | CI configuration |
+| --- | --- |
+| Mount the selected profile | Set a volume in runner configuration |
+| Pass the host user ID | Set `HOST_UID` to the profile owner's ID |
+| Add default agent arguments | Choose explicit arguments in the job script |
+| Select an image | Set the job's `image` |
 
 [Documentation index](./README.md) · [CLI reference](./cli_reference.md)

@@ -1,13 +1,12 @@
-## Create a claude profile
+## Create a Claude profile
 
-Run in your **host terminal** with InBox installed and Docker running.
+Start a profile named `work`. InBox creates its directory if needed.
+Run this in your host terminal.
 
 ```bash
 inbox claude -p work -n
 ```
 
-This creates the profile home if it does not exist and launches the agent. Exit before launching another session.
+See [Create and switch profiles](../profiles.md) for the full steps.
 
-See [Create and switch profiles](../profiles.md) for the full procedure and checks. For option defaults and migration requirements, see the [CLI reference](../cli_reference.md).
-
-[Documentation index](../README.md) · [claude authentication](./getting_started.md)
+[Documentation index](../README.md) · [Login guide](./getting_started.md)

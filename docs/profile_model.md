@@ -1,30 +1,36 @@
 ## Understand profiles and containers
 
-A profile is a persistent container home. A container is a temporary process environment created for one launch. Keeping these separate lets you reuse credentials and settings while replacing the runtime environment.
+A profile stores an agent's login, settings, and other saved files.
+A container runs the agent. InBox removes the container when the session ends.
 
 ```text
-Host                                   Container
-~/.inbox/claude-work  -- read-write -->  /home/inbox
-current project      -- read-write -->  /workspace
-selected image       -- supplies -->   agent and installed tools
+Host                              Container
+~/.inbox/claude-work  ---------->  /home/inbox  (writable)
+current project      ---------->  /workspace   (writable)
+selected image       ---------->  agent and tools
 
-Exit: container removed; profile and project remain.
+After exit: the profile and project remain on the host.
 ```
 
 ### What belongs to a profile?
 
-The agent controls the files it writes in its home: authentication, settings, caches, and session state may persist there. InBox mounts that directory; it does not translate credentials between agents.
+The agent chooses which files to save in its home directory. These may include credentials, settings, caches, and session history.
+InBox keeps these files in the profile directory.
 
-`claude-work` and `codex-work` are different homes even though both profiles are named `work`. The same profile can be reused from different project directories. The current project is mounted separately and remains writable.
+Claude's `work` profile and Codex's `work` profile are separate. They do not share credentials.
+You can use the same profile in different projects.
 
 ### Where do tools live?
 
-Tools installed in a custom image are available whenever that image is selected. Changes elsewhere in a running container's writable layer disappear when it exits. Files written into the mounted home or project remain. This is why repeatable system tools belong in a profile Dockerfile.
+An image supplies the agent and installed tools. Add tools with a [custom image](./custom_images.md) to keep them across sessions.
+Changes outside the mounted profile and project disappear when the container exits.
 
-The Dockerfile is stored in the profile, but building an image is explicit. Image selection follows the [CLI reference](./cli_reference.md#image-selection); a tagged override can bypass the profile image.
+A profile Dockerfile defines its custom image. You must build it before use.
+See [image selection](./cli_reference.md#image-selection) for overrides.
 
 ### What does separation guarantee?
 
-Profiles organize identities and state. They are not protection against a hostile agent with Docker socket access, and they do not make project edits disposable. The [security model](./security.md) describes writable mounts, approval defaults, and host integrations.
+Profiles keep accounts and settings separate. They do not prevent project edits or protect against an agent with host Docker access.
+See the [security model](./security.md) for access limits.
 
-[Documentation index](./README.md) · [Manage profiles](./profiles.md) · [Build a custom image](./custom_images.md)
+[Documentation index](./README.md) · [Manage profiles](./profiles.md)
