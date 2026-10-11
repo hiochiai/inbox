@@ -187,11 +187,13 @@ jobs:
         cache-from: type=gha,scope=claude
         cache-to: type=gha,scope=claude,mode=max
 
-  build-codex:
-    runs-on: ubuntu-latest
+  prepare-codex:
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
-      packages: write
+    outputs:
+      inbox-version: ${{ steps.inbox-version.outputs.version }}
+      codex-version: ${{ steps.codex-version.outputs.version }}
 
     steps:
     - name: Checkout repository
@@ -203,52 +205,69 @@ jobs:
         VERSION=$(grep '^INBOX_VERSION=' inbox | cut -d'=' -f2 | tr -d '"')
         echo "version=$VERSION" >> $GITHUB_OUTPUT
 
-    # The containerd image store can load a multi-platform image for testing.
-    - name: Set up Docker
-      uses: docker/setup-docker-action@v5
-      with:
-        daemon-config: |
-          {
-            "features": { "containerd-snapshotter": true }
-          }
-
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
+    # Resolve once so both architectures install the same CLI version.
     - name: Get latest Codex CLI version
       id: codex-version
       run: |
         LATEST_VERSION=$(npm view @openai/codex version)
         echo "version=$LATEST_VERSION" >> $GITHUB_OUTPUT
 
+  build-codex:
+    needs: prepare-codex
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    permissions:
+      contents: read
+      packages: write
+    env:
+      CODEX_VERSION: ${{ needs.prepare-codex.outputs.codex-version }}
+      ARCH: ${{ matrix.arch }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Verify native Docker architecture
+      run: |
+        case "$ARCH" in
+          amd64) EXPECTED_ARCH=x86_64 ;;
+          arm64) EXPECTED_ARCH=aarch64 ;;
+          *) exit 1 ;;
+        esac
+        test "$(uname -m)" = "$EXPECTED_ARCH"
+        docker info
+
     # Always validate the current source, even when a version tag already exists.
     - name: Build Codex image for testing
       uses: docker/build-push-action@v5
       with:
         context: ./boxes/codex
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/${{ matrix.arch }}
         build-args: |
-          CODEX_VERSION=${{ steps.codex-version.outputs.version }}
+          CODEX_VERSION=${{ env.CODEX_VERSION }}
         load: true
         push: false
         tags: inbox-codex:test
-        cache-from: type=gha,scope=codex
-        cache-to: type=gha,scope=codex,mode=max
+        cache-from: type=gha,scope=codex-${{ matrix.arch }}
+        cache-to: type=gha,scope=codex-${{ matrix.arch }},mode=max
 
-    - name: Test Codex container on both architectures
-      env:
-        CODEX_VERSION: ${{ steps.codex-version.outputs.version }}
+    - name: Test Codex container on native architecture
       run: |
-        for platform in linux/amd64 linux/arm64; do
-          docker run --rm --platform "$platform" inbox-codex:test --help
-          ACTUAL_VERSION=$(docker run --rm --platform "$platform" inbox-codex:test --version)
-          test "$ACTUAL_VERSION" = "codex-cli $CODEX_VERSION"
-          docker run --rm --platform "$platform" -e INBOX_SIGN_IN_WITH_CHATGPT=1 inbox-codex:test --version
-          docker run --rm --platform "$platform" --entrypoint node -v "$PWD/tests:/tests:ro" inbox-codex:test /tests/codex-sign-in-with-chatgpt.cjs /usr/local/lib/inbox/sign-in-with-chatgpt.cjs
-        done
+        docker run --rm --platform "linux/$ARCH" inbox-codex:test --help
+        ACTUAL_VERSION=$(docker run --rm --platform "linux/$ARCH" inbox-codex:test --version)
+        test "$ACTUAL_VERSION" = "codex-cli $CODEX_VERSION"
+        docker run --rm --platform "linux/$ARCH" -e INBOX_SIGN_IN_WITH_CHATGPT=1 inbox-codex:test --version
+        docker run --rm --platform "linux/$ARCH" --entrypoint node -v "$PWD/tests:/tests:ro" inbox-codex:test /tests/codex-sign-in-with-chatgpt.cjs /usr/local/lib/inbox/sign-in-with-chatgpt.cjs
 
     - name: Log in to GitHub Container Registry
       if: github.event_name == 'push' || github.event_name == 'schedule'
@@ -258,21 +277,84 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build and push Codex image
+    - name: Build and push Codex image by digest
       if: github.event_name == 'push' || github.event_name == 'schedule'
+      id: push
       uses: docker/build-push-action@v5
       with:
         context: ./boxes/codex
-        platforms: linux/amd64,linux/arm64
+        platforms: linux/${{ matrix.arch }}
         build-args: |
-          CODEX_VERSION=${{ steps.codex-version.outputs.version }}
-        push: true
-        tags: |
-          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-codex${{ steps.codex-version.outputs.version }}
-          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:${{ steps.inbox-version.outputs.version }}-codex
-          ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}:latest-codex
-        cache-from: type=gha,scope=codex
-        cache-to: type=gha,scope=codex,mode=max
+          CODEX_VERSION=${{ env.CODEX_VERSION }}
+        outputs: type=image,name=${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }},push-by-digest=true,name-canonical=true,push=true
+        cache-from: type=gha,scope=codex-${{ matrix.arch }}
+        cache-to: type=gha,scope=codex-${{ matrix.arch }},mode=max
+
+    - name: Export Codex image digest
+      if: github.event_name == 'push' || github.event_name == 'schedule'
+      env:
+        DIGEST: ${{ steps.push.outputs.digest }}
+      run: |
+        [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+        mkdir -p "$RUNNER_TEMP/codex-digests"
+        printf '%s\n' "$DIGEST" > "$RUNNER_TEMP/codex-digests/$ARCH"
+
+    - name: Upload Codex image digest
+      if: github.event_name == 'push' || github.event_name == 'schedule'
+      uses: actions/upload-artifact@v4
+      with:
+        name: codex-digest-${{ matrix.arch }}
+        path: ${{ runner.temp }}/codex-digests/${{ matrix.arch }}
+        if-no-files-found: error
+        retention-days: 1
+        overwrite: true
+
+  publish-codex:
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    needs: [prepare-codex, build-codex]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      INBOX_VERSION: ${{ needs.prepare-codex.outputs.inbox-version }}
+      CODEX_VERSION: ${{ needs.prepare-codex.outputs.codex-version }}
+
+    steps:
+    - name: Download Codex image digests
+      uses: actions/download-artifact@v4
+      with:
+        path: ${{ runner.temp }}/codex-digests
+        pattern: codex-digest-*
+        merge-multiple: true
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to GitHub Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.REGISTRY_GHCR }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    # Update public tags only after both native builds and tests pass.
+    - name: Publish multi-platform Codex image
+      env:
+        IMAGE: ${{ env.REGISTRY_GHCR }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME_BASE }}
+      run: |
+        SOURCES=()
+        for arch in amd64 arm64; do
+          DIGEST=$(cat "$RUNNER_TEMP/codex-digests/$arch")
+          [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          SOURCES+=("$IMAGE@$DIGEST")
+        done
+        docker buildx imagetools create \
+          --tag "$IMAGE:$INBOX_VERSION-codex$CODEX_VERSION" \
+          --tag "$IMAGE:$INBOX_VERSION-codex" \
+          --tag "$IMAGE:latest-codex" \
+          "${SOURCES[@]}"
+        docker buildx imagetools inspect "$IMAGE:$INBOX_VERSION-codex$CODEX_VERSION"
 
   build-gemini:
     runs-on: ubuntu-latest
@@ -357,7 +439,7 @@ jobs:
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
-    needs: [test-launcher, build-antigravity, build-claude, build-codex, build-gemini]
+    needs: [test-launcher, build-antigravity, build-claude, build-codex, publish-codex, build-gemini]
     runs-on: ubuntu-latest
     permissions:
       contents: write
