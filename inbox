@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Configuration ---
-INBOX_VERSION="0.16.0"
+INBOX_VERSION="0.17.0"
 INBOX_CONFIG_DIR="${HOME}/.inbox"
 INBOX_IMAGE="${INBOX_IMAGE:-ghcr.io/hiochiai/inbox}"
 DEFAULT_CONFIG_FILE="${INBOX_CONFIG_DIR}/default.conf"
@@ -61,7 +61,7 @@ function print_usage() {
 InBox runs coding agents in disposable Docker containers with persistent profiles.
 
 Usage:
-  inbox <agent> [-p <profile>] [-n] [-A] [--sign-in-with-chatgpt] [-D <path>] [-- agent_args...]
+  inbox <agent> [-p <profile>] [-n] [-A] [--sign-in-with-chatgpt] [-D <path>] [-e <KEY[=VALUE]>] [-- agent_args...]
   inbox [command] [command_options]
 
 Agents:
@@ -71,6 +71,9 @@ Agents:
   gemini                Run the Gemini agent.
 
 Options:
+  -e, --env <KEY[=VALUE]>
+                        Set a container variable or forward an exported host variable.
+                        Repeatable; last value wins. Unset host variables are errors.
   -p, --profile <name>  Use a specific profile for the agent.
   -n, --no-defaults     Do not use the default arguments for the agent.
   -A, --ssh-agent       Enable SSH Agent forwarding to the container.
@@ -159,7 +162,15 @@ function run_agent() {
     local enable_ssh_agent="$4"
     local docker_socket="$5"
     local sign_in_with_chatgpt="$6"
-    shift 6
+    local env_count="$7"
+    shift 7
+    local container_env=()
+    local env_entry
+    while [[ "$env_count" -gt 0 ]]; do
+        container_env+=("$1")
+        shift
+        env_count=$((env_count - 1))
+    done
     local agent_args=("$@")
 
     local default_args
@@ -235,6 +246,9 @@ function run_agent() {
         docker_run_cmd+=("-v" "${docker_socket}:/var/run/docker.sock")
     fi
 
+    for env_entry in ${container_env[@]+"${container_env[@]}"}; do
+        docker_run_cmd+=("-e" "$env_entry")
+    done
     docker_run_cmd+=("${final_image_name}")
 
     if [[ ${#final_agent_args[@]} -gt 0 ]]; then
@@ -369,7 +383,7 @@ function main() {
     if [[ $# -eq 0 ]]; then
         read -r default_agent default_profile < <(get_default_agent_and_profile)
         if [[ -n "${default_agent}" ]]; then
-            run_agent "${default_agent}" "${default_profile}" "true" "false" "" "false"
+            run_agent "${default_agent}" "${default_profile}" "true" "false" "" "false" 0
         else
             print_usage
             exit 1
@@ -388,8 +402,32 @@ function main() {
         local docker_socket=""
         local sign_in_with_chatgpt="false"
         local pass_through_args=()
+        local container_env=()
+        local env_spec env_key
         while [[ $# -gt 0 ]]; do
             case "$1" in
+                -e|--env)
+                    require_option_value "$1" "${2:-}" "inbox <agent> $1 <KEY[=VALUE]>"
+                    env_spec="$2"
+                    env_key="${env_spec%%=*}"
+                    if [[ ! "$env_key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
+                        echo "Error: Invalid environment variable name." >&2
+                        exit 1
+                    fi
+                    case "$env_key" in
+                        HOST_UID|INBOX_SIGN_IN_WITH_CHATGPT)
+                            echo "Error: Environment variable '$env_key' is reserved by InBox." >&2
+                            exit 1
+                            ;;
+                    esac
+                    # Keep name-only entries for Docker; do not transform host values.
+                    if [[ "$env_spec" != *=* ]] && ! printenv "$env_key" >/dev/null; then
+                        echo "Error: Host environment variable '$env_key' is not set or exported." >&2
+                        exit 1
+                    fi
+                    container_env+=("$env_spec")
+                    shift 2
+                    ;;
                 -p|--profile)
                     require_option_value "$1" "${2:-}" "inbox <agent> $1 <profile>"
                     profile="$2"
@@ -434,7 +472,16 @@ function main() {
             exit 1
         fi
 
-        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" "${docker_socket}" "${sign_in_with_chatgpt}" ${pass_through_args[@]+"${pass_through_args[@]}"}
+        if [[ "$enable_ssh_agent" == "true" ]]; then
+            for env_spec in ${container_env[@]+"${container_env[@]}"}; do
+                if [[ "${env_spec%%=*}" == SSH_AUTH_SOCK ]]; then
+                    echo "Error: SSH_AUTH_SOCK cannot be set with --env when --ssh-agent is enabled." >&2
+                    exit 1
+                fi
+            done
+        fi
+
+        run_agent "${command}" "${profile}" "${use_default_args}" "${enable_ssh_agent}" "${docker_socket}" "${sign_in_with_chatgpt}" "${#container_env[@]}" ${container_env[@]+"${container_env[@]}"} ${pass_through_args[@]+"${pass_through_args[@]}"}
         return
     fi
 

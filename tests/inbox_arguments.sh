@@ -39,6 +39,9 @@ function check_run() {
     if [[ -n "$socket" ]]; then
         expected+=(-v "$socket:/var/run/docker.sock")
     fi
+    for entry in ${expected_env[@]+"${expected_env[@]}"}; do
+        expected+=(-e "$entry")
+    done
     expected+=("$INBOX_IMAGE")
     if [[ "$defaults" == true ]]; then
         case "$agent" in
@@ -102,7 +105,7 @@ for agent in antigravity claude codex gemini; do
         check_error 'Agent arguments must follow --' "$agent" "$bad"
     done
     check_error 'Agent arguments must follow --' "$agent" -p work prompt -- --help
-    for option in -p --profile -D --docker-socket; do
+    for option in -p --profile -D --docker-socket -e --env; do
         check_error 'Missing required argument' "$agent" "$option"
         check_error 'Missing required argument' "$agent" "$option" ''
         for next in -- -n --profile -; do
@@ -118,6 +121,42 @@ for agent in antigravity claude codex gemini; do
     grep -q 'SSH_AUTH_SOCK is not set' "$test_dir/output"
     SSH_AUTH_SOCK="$saved_socket"
 done
+
+# Environment variables preserve values and the agent argument boundary.
+export INBOX_TEST_EXPORTED='host value'
+export INBOX_TEST_EMPTY=''
+unset INBOX_TEST_MISSING
+INBOX_TEST_LOCAL=local
+for agent in antigravity claude codex gemini; do
+    expected_env=('MODE=first' 'MODE=last' 'EMPTY=' 'EQUALS=a=b' 'DASH=-value' $'TEXT=hello world\n日本語\n' 'LITERAL=$(touch should-not-exist) *.txt' INBOX_TEST_EXPORTED INBOX_TEST_EMPTY)
+    forwarded=(-e 'AGENT=value' --env '')
+    check_run "$agent" work true false '' "$agent" -p work -e 'MODE=first' --env 'MODE=last' -e 'EMPTY=' -e 'EQUALS=a=b' -e 'DASH=-value' -e $'TEXT=hello world\n日本語\n' -e 'LITERAL=$(touch should-not-exist) *.txt' -e INBOX_TEST_EXPORTED --env INBOX_TEST_EMPTY -- "${forwarded[@]}"
+    test ! -e should-not-exist
+    expected_env=()
+    check_error 'not set or exported' "$agent" -e INBOX_TEST_MISSING
+    check_error 'not set or exported' "$agent" -e INBOX_TEST_LOCAL
+    for spec in '=private-value' '1KEY=value' 'BAD-KEY=value'; do
+        check_error 'Invalid environment variable name' "$agent" -e "$spec"
+        ! grep -q private-value "$test_dir/error"
+    done
+    for spec in HOST_UID HOST_UID=123 INBOX_SIGN_IN_WITH_CHATGPT=1; do
+        check_error 'reserved by InBox' "$agent" -e "$spec"
+    done
+    check_error 'SSH_AUTH_SOCK cannot be set' "$agent" -A -e SSH_AUTH_SOCK=/tmp/socket
+    check_error 'SSH_AUTH_SOCK cannot be set' "$agent" -e SSH_AUTH_SOCK=/tmp/socket -A
+    expected_env=('SSH_AUTH_SOCK=/tmp/socket')
+    forwarded=()
+    check_run "$agent" '' true false '' "$agent" -e SSH_AUTH_SOCK=/tmp/socket
+    expected_env=()
+    check_error 'Agent arguments must follow --' "$agent" --env=KEY=value
+    check_error 'Agent arguments must follow --' "$agent" -eKEY=value
+done
+expected_env=('LOGIN_TEST=value')
+expect_sign_in_with_chatgpt=true
+forwarded=(login)
+check_run codex '' false false '' codex -e LOGIN_TEST=value --sign-in-with-chatgpt
+expected_env=()
+expect_sign_in_with_chatgpt=false
 
 # Callback forwarding is opt-in and restricted to Codex.
 expect_sign_in_with_chatgpt=true

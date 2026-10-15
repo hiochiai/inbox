@@ -31,7 +31,7 @@ Review user-ID and socket handling for the image's distribution.
 Document any defaults that affect approvals.
 
 The launcher mounts the profile and project as writable directories and requires a terminal.
-It passes `HOST_UID`, not arbitrary host variables. See the [CLI reference](./docs/cli_reference.md) for the full behavior.
+It passes `HOST_UID` and explicitly requested variables through `-e` / `--env`. See the [CLI reference](./docs/cli_reference.md) for the full behavior.
 
 Build and check an image without credentials:
 

@@ -18,6 +18,9 @@ inbox claude -p work -n -- -p "Explain this project"
 The first `-p work` selects the InBox profile. The second `-p` sends a prompt to Claude.
 The prompt requires a logged-in profile and provider access.
 
+To set container variables, use `-e KEY=VALUE` or forward exported host variables with `-e KEY` before `--`.
+See [environment variable options](./cli_reference.md#pass-environment-variables) for details.
+
 See the [CLI reference](./cli_reference.md#launch-an-agent) for all argument rules and [migration examples](./cli_reference.md#argument-migration).
 For jobs without a terminal, use [images directly in CI](./running_in_ci.md).
 

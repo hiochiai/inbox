@@ -6,7 +6,7 @@ Run commands in your host terminal unless stated otherwise.
 ### Launch an agent
 
 ```text
-inbox <agent> [-p <profile>] [-n] [-A] [-D <socket>] [--sign-in-with-chatgpt] [-- agent_args...]
+inbox <agent> [-p <profile>] [-n] [-A] [-D <socket>] [-e <KEY[=VALUE]>] [--sign-in-with-chatgpt] [-- agent_args...]
 ```
 
 Agents: `claude`, `codex`, `antigravity`, and `gemini` (deprecated in InBox).
@@ -14,6 +14,7 @@ Agents: `claude`, `codex`, `antigravity`, and `gemini` (deprecated in InBox).
 | Option | Default | Behavior |
 | --- | --- | --- |
 | `-p`, `--profile <name>` | Unnamed profile | Select a profile for this agent |
+| `-e`, `--env <KEY[=VALUE]>` | No extra variables | Set a value or forward an exported host variable; repeatable |
 | `-n`, `--no-defaults` | Off | Omit the default flag that skips agent approvals |
 | `-A`, `--ssh-agent` | Off | Forward `SSH_AUTH_SOCK`; warn if unset |
 | `-D`, `--docker-socket <path>` | No socket | Mount at `/var/run/docker.sock`; warn but continue if the source is not a socket |
@@ -43,6 +44,27 @@ Argument rules:
 
 Default flags come before agent arguments. With `-n`, the agent's settings control approvals and its own sandbox.
 `-n` adds no Docker restrictions. See the [security model](./security.md).
+
+### Pass environment variables
+
+```bash
+# Set a value and forward an exported host variable
+inbox claude -p work -e APP_MODE=development --env ANTHROPIC_API_KEY
+```
+
+Use `-e KEY=VALUE` to set a value, or `-e KEY` to forward an exported host variable.
+An unset or unexported host variable is an error. Exported empty values are allowed.
+Use `-e KEY=` for an explicit empty value. Repeated keys use the last occurrence.
+Names must match `[A-Za-z_][A-Za-z0-9_]*`. Values can contain spaces, newlines, and additional equals signs.
+Quote values for your host shell. InBox does not evaluate their contents.
+
+`HOST_UID` and `INBOX_SIGN_IN_WITH_CHATGPT` are reserved and rejected.
+Setting `SSH_AUTH_SOCK` with `-e` is rejected when `-A` is enabled, regardless of option order.
+Options apply to this launch only, including the Codex login action; they are not saved in profiles.
+Put them before `--`. After `--`, they are passed unchanged to the agent.
+Use separate arguments; `--env=KEY=VALUE` and `-eKEY=VALUE` are unsupported.
+For secrets, prefer name-only forwarding to avoid writing values into shell history.
+InBox does not print environment values; they remain accessible inside the container and through Docker inspection.
 
 ### Codex browser login
 
@@ -101,7 +123,7 @@ Launching creates the profile directory and runs `docker run -it --rm`.
 Both project and profile mounts are writable. InBox passes the host user's ID through `HOST_UID`.
 The entrypoint attempts to match that ID, then runs the agent through `gosu inbox`.
 
-Host environment variables are not forwarded automatically.
+Host environment variables are forwarded only when explicitly requested with `-e KEY`.
 `-A` forwards the SSH socket variable; direct ChatGPT login sets its own relay variable.
 Only the [Codex login action](#codex-browser-login) publishes a port.
 For execution without a terminal, see [CI usage](./running_in_ci.md).
