@@ -22,9 +22,9 @@ RUN set -eux; \
 
 RUN set -eux; node --version; npm --version
 
-RUN set -eux; npm install -g "@openai/codex@${CODEX_VERSION}"
-
-RUN set -eux; npm cache clean --force
+RUN set -eux; \
+    npm install -g "@openai/codex@${CODEX_VERSION}"; \
+    npm cache clean --force
 
 RUN set -eux; \
     usermod -l inbox node; \
